@@ -1,9 +1,13 @@
 package floydwarshall;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 /*
     Floyd Warshall is used for pre-calculating all paths from every to every other node.
     Unknown paths should be a very large number to make sure known paths will be registered.
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FloydWarshall {
 
     public static int[][] calculatePaths(int[][] graph) {

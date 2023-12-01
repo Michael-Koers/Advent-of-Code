@@ -11,6 +11,10 @@
         <maven.compiler.source>21</maven.compiler.source>
     </properties>
 
+    <modules>
+        <module>2023</module>
+        <module>util</module>
+    </modules>
 
     <dependencies>
         <dependency>
