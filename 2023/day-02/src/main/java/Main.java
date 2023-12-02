@@ -26,7 +26,6 @@ public class Main {
         int maxGreen = 13;
         int maxBlue = 14;
 
-
         Map<Integer, List<Score>> possibleGames = gameResults.entrySet()
                 .stream()
                 .filter(e -> e.getValue().stream().allMatch(s -> s.red() <= maxRed && s.green() <= maxGreen && s.blue() <= maxBlue))
@@ -35,12 +34,27 @@ public class Main {
         int sumId = possibleGames.keySet().stream().mapToInt(Integer::intValue).sum();
 
         System.out.printf("Done! Total games: %s, possible games: %s, total ID: %d%n", gameResults.size(), possibleGames.size(), sumId);
-
     }
 
     private static void solvePart2(Map<Integer, List<Score>> gameResults) {
 
+        // This should be streamable... but too tricky
         int totalPower = 0;
+
+        for (var entry : gameResults.entrySet()) {
+
+            int maxRed = 0;
+            int maxGreen = 0;
+            int maxBlue = 0;
+
+            for (var score : entry.getValue()) {
+                maxBlue = Math.max(score.blue(), maxBlue);
+                maxGreen = Math.max(score.green(), maxGreen);
+                maxRed = Math.max(score.red(), maxRed);
+            }
+
+            totalPower += maxRed * maxBlue * maxGreen;
+        }
 
         System.out.printf("Done! Total games: %s, total power: %d%n", gameResults.size(), totalPower);
     }
@@ -54,7 +68,6 @@ public class Main {
 
             String game = line.split(":")[1];
             String[] sets = game.split(";");
-
 
             List<Score> scores = new ArrayList<>();
 
@@ -72,12 +85,9 @@ public class Main {
                         case "red" -> cubeCount.setRed(number);
                         default -> throw new IllegalStateException("Unexpected value: " + color);
                     };
-
                 }
-
                 scores.add(cubeCount);
             }
-            // put hashmap
             gameResults.put(gameId, scores);
         }
         return gameResults;
