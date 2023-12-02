@@ -9,7 +9,6 @@ import java.util.*;
  * Calculate the shortest path from source to all possible destinations.
  * Each node contains information about the distance between it and the source node, and the path required to take.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Dijkstra {
 
 
