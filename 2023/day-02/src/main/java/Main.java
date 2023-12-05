@@ -1,3 +1,6 @@
+import util.FileInput;
+import util.Stopwatch;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -9,16 +12,16 @@ import java.util.stream.Collectors;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 
-        long start = System.currentTimeMillis();
+        Stopwatch stopwatch = new Stopwatch();
 
         Map<Integer, List<Score>> gameResults = parseGameResults(Files.readAllLines(Paths.get("2023/day-02/input.txt")));
 
         solvePart1(gameResults);
         solvePart2(gameResults);
 
-        System.out.printf("Total duration: %sms%n", System.currentTimeMillis() - start);
+        System.out.printf("Total duration: %sms%n", stopwatch.duration());
     }
 
     private static void solvePart1(Map<Integer, List<Score>> gameResults) {

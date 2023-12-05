@@ -9,7 +9,7 @@
         <version>1</version>
     </parent>
 
-    <artifactId>day-02</artifactId>
+    <artifactId>day-01</artifactId>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
