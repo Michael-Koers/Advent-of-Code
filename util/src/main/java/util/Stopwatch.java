@@ -28,4 +28,8 @@ public class Stopwatch {
         this.end = System.currentTimeMillis();
         this.duration = this.end - this.start;
     }
+
+    public void reset(){
+        this.start = System.currentTimeMillis();
+    }
 }
