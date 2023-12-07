@@ -13,6 +13,7 @@
         <module>day-04</module>
         <module>day-05</module>
         <module>day-06</module>
+        <module>day-07</module>
     </modules>
 
     <modelVersion>4.0.0</modelVersion>
