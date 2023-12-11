@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>michael.koers</groupId>
+        <artifactId>codeadvent</artifactId>
+        <version>1</version>
+    </parent>
+
+    <artifactId>2015</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>day-01-2015</module>
+        <module>day-02-2015</module>
+        <module>day-03-2015</module>
+        <module>day-04-2015</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>michael.koers</groupId>
+            <artifactId>util</artifactId>
+            <version>1</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+</project>

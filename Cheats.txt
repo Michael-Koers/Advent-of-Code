@@ -1,0 +1,30 @@
+Path finding
+
+    Between two points
+        Along axis -> Manhattan distance
+            Math:   |x1 - x0| + |y1 - y0|
+            Code:   Math.abs(x1 - x0) + Math.abs(y1 - y0)
+
+        Straight -> Euclidean sitance
+            Math:   √((x1-x0)² + (y1-y0)²)
+            Code:   Math.sqrt(Math.pow(x1 - x0, 2d) + Math.pow(y1 - y0, 2d));
+
+    Everywhere to everywhere -> Floyd Warshall
+
+    From point A
+        Only positive weights
+            Dijkstra
+            A*
+
+        With negative weights
+            BellmanFord
+
+
+Objects in space
+    Collision -> Horizontal/Vertical Ray casting
+    Adjacency -> Math.abs(x1 - x0) < 2 and/or Math.abs(y1 - y0) < 2
+
+
+Math
+    Find first occurence of all numbers colliding       -> LCD
+    Find greatest number that can divide all numbers    -> GCD
