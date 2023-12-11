@@ -1,7 +1,6 @@
 package michael.koers;
 
 import util.FileInput;
-import util.Point;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -11,106 +10,88 @@ import java.util.List;
 public class Main2 {
     public static void main(String[] args) throws URISyntaxException, IOException {
 
-        List<String> lines = FileInput.read(FileInput.INPUT_TEST, Main.class);
+        List<String> lines = FileInput.read(FileInput.INPUT, Main.class);
 
-        List<String> map = parseInput(lines);
+        List<Point> map = parseInput(lines, 1L);
+        solvePart1(map);
 
+        map = parseInput(lines, 1_000_000L - 1L);
         solvePart1(map);
     }
 
-    private static void solvePart1(List<String> map) {
-        List<Galaxy> galaxies = new ArrayList<>();
+    private static List<Point> parseInput(List<String> lines, long expansion) {
 
-        // find points
-        for(int y = 0; y < map.size(); y++){
+        List<Point> galaxies = new ArrayList<>();
 
-            for(int x = 0; x < map.get(y).length(); x++){
+        List<Integer> emptyVerts = new ArrayList<>();
+        List<Integer> emptyHors = new ArrayList<>();
 
-                if(map.get(y).charAt(x) != '.'){
-
-                    galaxies.add(new Galaxy(map.get(y).charAt(x) - '0', new Point(x, y)));
-                }
+        for (int y = 0; y < lines.size(); y++) {
+            if (!lines.get(y).contains("#")) {
+                emptyHors.add(y);
             }
         }
 
-        Long total = 0L;
+        col:
+        for (int x = 0; x < lines.get(0).length(); x++) {
+            for (int y = 0; y < lines.size(); y++) {
+                if (lines.get(y).charAt(x) == '#') {
+                    continue col;
+                }
+            }
+            emptyVerts.add(x);
+        }
 
-        List<Galaxy> others = new ArrayList<>(galaxies);
-        for(Galaxy galaxy_src : galaxies){
+        System.out.printf("Empty horizontal lines: %s%n", emptyHors);
+        System.out.printf("Empty vertical lines: %s%n", emptyVerts);
+
+        long padding_y = 0L;
+
+        row:
+        for (int y = 0; y < lines.size(); y++) {
+            if (emptyHors.contains(y)) {
+                padding_y += expansion;
+                continue row;
+            }
+
+            long padding_x = 0L;
+
+            col:
+            for (int x = 0; x < lines.get(y).length(); x++) {
+                if (emptyVerts.contains(x)) {
+                    padding_x += expansion;
+                    continue col;
+                }
+
+                if (lines.get(y).charAt(x) == '#') {
+                    galaxies.add(new Point(y + padding_y, x + padding_x));
+                }
+            }
+        }
+        return galaxies;
+    }
+
+    private static void solvePart1(List<Point> galaxies) {
+        long total = 0L;
+
+        List<Point> others = new ArrayList<>(galaxies);
+        for (Point galaxy_src : galaxies) {
             others.remove(galaxy_src);
-            for(Galaxy galaxy_dest : others){
-                if(galaxy_src == galaxy_dest){
+            for (Point galaxy_dest : others) {
+                if (galaxy_src == galaxy_dest) {
                     continue;
                 }
                 // Manhatten distance
-                total += Math.abs(galaxy_dest.point().x() - galaxy_src.point().x()) + Math.abs(galaxy_dest.point().y() - galaxy_src.point().y());
+                total += Math.abs(galaxy_dest.x() - galaxy_src.x()) + Math.abs(galaxy_dest.y() - galaxy_src.y());
             }
         }
 
         System.out.printf("Solved part 1, sum of shortest paths: %s%n", total);
     }
 
-    private static List<String> parseInput(List<String> lines) {
 
-        System.out.println("Input");
-        prettyPrint(lines);
-
-        List<String> map = new ArrayList<>();
-
-        int galaxyNumber = 1;
-
-        for (String line : lines) {
-            // Expand horizontally
-            if (!line.contains("#")) {
-                map.add(line);
-                map.add(line);
-            } else {
-                StringBuilder sb = new StringBuilder();
-                for(String s : line.split("")){
-                    if(s.equals("#")){
-                        s = String.valueOf(galaxyNumber++);
-                    }
-                    sb.append(s);
-                }
-                map.add(sb.toString());
-            }
-        }
-
-        System.out.println("Before");
-        prettyPrint(map);
-
-        // Expand vertically
-        for(int x = 0; x < map.get(0).length(); x++){
-            boolean isEmpty = true;
-            for(int y = 0; y < map.size(); y++){
-
-                if(map.get(y).charAt(x) != '.'){
-                    isEmpty = false;
-                    break;
-                }
-            }
-            if(isEmpty){
-                for(int y = 0; y < map.size(); y++){
-                    String newLine = new StringBuilder(map.get(y)).insert(x, ".").toString();
-                    map.set(y, newLine);
-                }
-                x++;
-            }
-        }
-
-        System.out.println("After");
-        prettyPrint(map);
-
-        return map;
-    }
-
-    public static void prettyPrint(List<String> map){
-        for(String line : map){
-            System.out.println(line);
-        }
-        System.out.println();
-    }
 }
 
 
-record Galaxy(int number, Point point){};
+record Point(long y, long x) {
+}
