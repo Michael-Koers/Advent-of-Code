@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static java.util.stream.IntStream.range;
+
 public class Main {
     public static void main(String[] args) throws URISyntaxException, IOException {
 
@@ -34,7 +36,7 @@ public class Main {
             criteria.addAll(dupe);
             criteria.addAll(dupe);
 
-            String unfoldedSpring = IntStream.range(0, 5).mapToObj(i -> {
+            String unfoldedSpring = range(0, 5).mapToObj(i -> {
                 return springs;
             }).reduce((s1, s2) -> s1 + "?" + s2).get();
 
@@ -77,17 +79,16 @@ public class Main {
         String[] arr = springs.split("\\?", -1);
 
         // From: https://stackoverflow.com/questions/65973024/generate-all-possible-string-combinations-by-replacing-the-hidden-number-sig
-        return IntStream
-                // Loop over all parts
-                .range(0, arr.length)
+        return // Loop over all parts
+                range(0, arr.length)
 
-                .mapToObj(i -> i < arr.length - 1 ? new String[]{arr[i] + ".", arr[i] + "#"} : new String[]{arr[i]})
+                        .mapToObj(i -> i < arr.length - 1 ? new String[]{arr[i] + ".", arr[i] + "#"} : new String[]{arr[i]})
 
-                // Combine all possibilities on the left, with possibilities on the right, growing the collectiong exponantially
-                .reduce((arr1, arr2) -> Arrays.stream(arr1)
-                        .flatMap(str1 -> Arrays.stream(arr2).map(str2 -> str1 + str2))
-                        .toArray(String[]::new))
-                .orElse(new String[]{});
+                        // Combine all possibilities on the left, with possibilities on the right, growing the collectiong exponantially
+                        .reduce((arr1, arr2) -> Arrays.stream(arr1)
+                                .flatMap(str1 -> Arrays.stream(arr2).map(str2 -> str1 + str2))
+                                .toArray(String[]::new))
+                        .orElse(new String[]{});
     }
 
     private static long countAllPermutations(String springs, List<Integer> sizes) {
@@ -96,26 +97,35 @@ public class Main {
         String[] arr = springs.split("\\?", -1);
 
         // From: https://stackoverflow.com/questions/65973024/generate-all-possible-string-combinations-by-replacing-the-hidden-number-sig
-        return Arrays.stream(IntStream
-                        // Loop over all parts
-                        .range(0, arr.length)
+        String[] x = // Loop over all parts
+                Arrays.stream(range(0, arr.length)
 
                         .mapToObj(i -> i < arr.length - 1 ? new String[]{arr[i] + ".", arr[i] + "#"} : new String[]{arr[i]})
 
                         // Combine all possibilities on the left, with possibilities on the right, growing the collectiong exponantially
                         .reduce((arr1, arr2) -> Arrays.stream(arr1)
                                 .flatMap(str1 -> Arrays.stream(arr2)
-                                        .map(str2 -> str1 + str2)).toArray(String[]::new))
+                                        .map(str2 -> str1 + str2))
+                                .toArray(String[]::new))
                         .get())
-                .filter(perm -> Arrays.stream(perm.split("\\."))
+                        .filter(perm -> Arrays.stream(perm.split("\\."))
                                 .filter(s -> !s.isBlank())
                                 .map(String::length)
                                 .allMatch(sizes::contains))
-                .map(perm -> Arrays.stream(perm.split("\\."))
+                        .filter(perm -> Arrays.stream(perm.split("\\."))
+                                .filter(s -> !s.isBlank())
+                                .map(String::length)
+                                .toList().equals(sizes)).toArray(String[]::new);
+                        /*
+                        .filter(perm -> Arrays.stream(perm.split("\\."))
+                .filter(s -> !s.isBlank())
+                .map(String::length)
+                .allMatch(sizes::contains))
+                .filter(perm -> Arrays.stream(perm.split("\\."))
                         .filter(s -> !s.isBlank())
                         .map(String::length)
-                        .toList())
-                .filter(perm -> perm.size() == sizes.size() && perm.equals(sizes))
-                .count();
+                        .toList().equals(sizes)))
+*/
+        return x.length;
     }
 }
