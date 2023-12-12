@@ -105,7 +105,6 @@ public class Main {
             int hits = 0;
             for(int x = 0; x < read.get(y).length(); x++){
                 String c = read.get(y).split("")[x];
-                map[y][x] = c;
 
                 if(pipeGrid.contains(new Point(x, y))){
                     if("LJ|".contains(c)){
@@ -113,7 +112,6 @@ public class Main {
                     }
                 }else if(hits % 2 != 0){
                     tiles++;
-                    map[y][x] = "+";
                 }
             }
         }

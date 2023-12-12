@@ -10,7 +10,7 @@ import java.util.List;
 public class Main2 {
     public static void main(String[] args) throws URISyntaxException, IOException {
 
-        List<String> lines = FileInput.read(FileInput.INPUT, Main.class);
+        List<String> lines = FileInput.read("input-stefan.txt", Main.class);
 
         List<Point> map = parseInput(lines, 1L);
         solvePart1(map);

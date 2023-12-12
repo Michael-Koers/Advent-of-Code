@@ -15,7 +15,6 @@ public class Main {
     public static void main(String[] args) throws URISyntaxException, IOException {
 
         List<String> lines = FileInput.read(FileInput.INPUT, Main.class);
-
         List<List<Long>> allValues = parseInput(lines);
 
         Stopwatch stopwatch = new Stopwatch();

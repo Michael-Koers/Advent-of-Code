@@ -4,7 +4,6 @@ import util.Stopwatch;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -28,19 +27,15 @@ public class Main {
     }
 
     private static void solvePart2(Race bigRace) {
-
         Long distanceToBeat = bigRace.distance();
         Long speed = 0L;
         Long possibleWins = 0L;
 
-        for(Long timeLeft = bigRace.duration(); timeLeft > 0; timeLeft--){
-
-            if(speed * timeLeft > distanceToBeat) {
+        for (Long timeLeft = bigRace.duration(); timeLeft > 0; timeLeft--) {
+            if (speed * timeLeft > distanceToBeat) {
                 possibleWins++;
             }
-
             speed++;
-
         }
 
         System.out.printf("Part 2, total wins: %s%n", possibleWins);
@@ -71,11 +66,8 @@ public class Main {
         }
 
         List<Long> results = new ArrayList<>();
-
         results.add(timeLeft * speed);
-
         results.addAll(calculateRace(race, timeLeft - 1, speed + 1));
-
         return results;
     }
 

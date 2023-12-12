@@ -18,6 +18,7 @@
         <module>day-09</module>
         <module>day-10</module>
         <module>day-11</module>
+        <module>day-12-2023</module>
     </modules>
 
     <modelVersion>4.0.0</modelVersion>
