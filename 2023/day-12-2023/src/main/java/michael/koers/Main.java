@@ -4,49 +4,106 @@ import util.FileInput;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import static java.util.stream.IntStream.range;
 
 public class Main {
+
+    private static Map<Input, Long> permutationCache = new HashMap<>();
+
     public static void main(String[] args) throws URISyntaxException, IOException {
 
-        List<String> lines = FileInput.read(FileInput.INPUT_TEST, Main.class);
+        List<String> lines = FileInput.read(FileInput.INPUT, Main.class);
 
-//        solvePart1(lines);
+        solvePart1(lines);
         solvePart2(lines);
     }
 
     private static void solvePart2(List<String> lines) {
 
-        long valid = 0L;
-
-        // Generate all permutations and check wether they abide to their own rules
+        long total = 0L;
         for (String line : lines) {
 
-            String springs = line.split(" ")[0];
-            List<Integer> criteria = Arrays.stream(line.split(" ")[1].split(",")).map(Integer::parseInt).collect(Collectors.toCollection(ArrayList::new));
-            List<Integer> dupe = new ArrayList<>(criteria);
-            criteria.addAll(dupe);
-            criteria.addAll(dupe);
-            criteria.addAll(dupe);
-            criteria.addAll(dupe);
+            String[] parts = line.split(" ");
 
-            String unfoldedSpring = range(0, 5).mapToObj(i -> {
-                return springs;
-            }).reduce((s1, s2) -> s1 + "?" + s2).get();
+            List<Integer> groups = unfoldGroups(Arrays.stream(parts[1].split(",")).map(Integer::parseInt).toList(), 5);
+            String condition = unfoldCondition(parts[0], 5);
 
-            long count = countAllPermutations(unfoldedSpring, criteria);
-            System.out.printf("String %s(%s) has %s valid permutations for %s(%s)%n", unfoldedSpring, springs, count, criteria, dupe);
-            valid += count;
+            total += countPermutations(condition, groups);
         }
 
-        System.out.printf("Solved part 1, total of %s valid permutations%n", valid);
+        System.out.printf("Solved part 2, total permutations: %s%n", total);
 
+    }
+
+    private static String unfoldCondition(String part, int times) {
+        return IntStream.range(0, times).mapToObj(i -> {
+            return part;
+        }).reduce((s, s2) -> s + "?" + s2).get();
+    }
+
+    private static List<Integer> unfoldGroups(List<Integer> groups, int times) {
+        List<Integer> unfolded = new ArrayList<>();
+        for (int i = 0; i < times; i++) {
+            unfolded.addAll(groups);
+        }
+        return unfolded;
+    }
+
+    private static long countPermutations(String condition, List<Integer> groups) {
+
+        // Only managed to solve this thanks to: https://github.com/ash42/adventofcode/blob/main/adventofcode2023/src/nl/michielgraat/adventofcode2023/day12/Day12.java
+        Input input = new Input(condition, groups);
+
+        // Cache with previously calculated permutations, return if condition and groups have already been calculated
+        if (permutationCache.containsKey(input)) {
+            return permutationCache.get(input);
+        }
+
+        if (condition.isEmpty()) {
+            // If condition and remaining groups are both empty, this is a valid permutation so +1
+            return groups.isEmpty() ? 1 : 0;
+        }
+
+        char firstChar = condition.charAt(0);
+        long permutations = 0L;
+
+        if (firstChar == '.') {
+            permutations = countPermutations(condition.substring(1), groups);
+        } else if (firstChar == '?') {
+            permutations = countPermutations("#" + condition.substring(1), groups) +
+                    countPermutations("." + condition.substring(1), groups);
+        }
+        // Fist char is '#', Condition left with groups left
+        else if (!groups.isEmpty()) {
+            // Get first group size of damaged springs
+            int nrDamaged = groups.get(0);
+            List<Integer> remainingGroups = groups.subList(1, groups.size());
+
+            // If group is smaller than remaining condition, and first characters of condition equals to group size
+            // and are all valid springs, then group size fits in start of condition
+            if (nrDamaged <= condition.length() && condition.chars().limit(nrDamaged).allMatch(c -> c == '?' || c == '#')) {
+
+                // Remaning condition length equals next number of damaged springs
+                if (nrDamaged == condition.length()) {
+                    // Permutation is only valid (because we are at end of condition) if no remaining groups are left
+                    // (otherwise there are more groups then there is condition left).
+                    permutations = remainingGroups.isEmpty() ? 1 : 0;
+                } else if (condition.charAt(nrDamaged) == '.') {
+                    // First char after current group is '.', which splits this group from the next, which is valid
+                    permutations = countPermutations(condition.substring(nrDamaged + 1), remainingGroups);
+                } else if (condition.charAt(nrDamaged) == '?') {
+                    // First char after current group is '?', which is only valid if it becomes a '.'
+                    // A '#' would mean current group is actually longer, which is invalid
+                    permutations = countPermutations("." + condition.substring(nrDamaged + 1), remainingGroups);
+                }
+            }
+        }
+
+        permutationCache.put(input, permutations);
+        return permutations;
     }
 
     private static void solvePart1(List<String> lines) {
@@ -90,42 +147,7 @@ public class Main {
                                 .toArray(String[]::new))
                         .orElse(new String[]{});
     }
-
-    private static long countAllPermutations(String springs, List<Integer> sizes) {
-
-        // Array of substrings around the unknown numbers
-        String[] arr = springs.split("\\?", -1);
-
-        // From: https://stackoverflow.com/questions/65973024/generate-all-possible-string-combinations-by-replacing-the-hidden-number-sig
-        String[] x = // Loop over all parts
-                Arrays.stream(range(0, arr.length)
-
-                        .mapToObj(i -> i < arr.length - 1 ? new String[]{arr[i] + ".", arr[i] + "#"} : new String[]{arr[i]})
-
-                        // Combine all possibilities on the left, with possibilities on the right, growing the collectiong exponantially
-                        .reduce((arr1, arr2) -> Arrays.stream(arr1)
-                                .flatMap(str1 -> Arrays.stream(arr2)
-                                        .map(str2 -> str1 + str2))
-                                .toArray(String[]::new))
-                        .get())
-                        .filter(perm -> Arrays.stream(perm.split("\\."))
-                                .filter(s -> !s.isBlank())
-                                .map(String::length)
-                                .allMatch(sizes::contains))
-                        .filter(perm -> Arrays.stream(perm.split("\\."))
-                                .filter(s -> !s.isBlank())
-                                .map(String::length)
-                                .toList().equals(sizes)).toArray(String[]::new);
-                        /*
-                        .filter(perm -> Arrays.stream(perm.split("\\."))
-                .filter(s -> !s.isBlank())
-                .map(String::length)
-                .allMatch(sizes::contains))
-                .filter(perm -> Arrays.stream(perm.split("\\."))
-                        .filter(s -> !s.isBlank())
-                        .map(String::length)
-                        .toList().equals(sizes)))
-*/
-        return x.length;
-    }
 }
+
+record Input(String condition, List<Integer> groups) {
+};
