@@ -3,6 +3,7 @@ package michael.koers;
 import util.Direction;
 import util.FileInput;
 import util.Point;
+import util.Stopwatch;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -15,17 +16,35 @@ public class Main {
 
         Field field = parseInput(lines);
 
+        Stopwatch stopwatch = new Stopwatch();
+
 //        solvePart1(field);
         solvePart2(field);
+
+        stopwatch.print();
     }
 
     private static void solvePart2(Field field) {
 
         List<Direction> directions = List.of(Direction.UP, Direction.LEFT, Direction.DOWN, Direction.RIGHT);
 
-        long cycles = 1000000000;
+        long cycles = 1_000_000_000;
+        Map<Set<Point>, Long> cache = new HashMap<>();
+        boolean cacheSkipped = false;
 
         for (long x = 0; x < cycles; x++) {
+            if (cache.containsKey(field.round()) && !cacheSkipped) {
+                long cadance = x - cache.get(field.round());
+                // Can't include first x number of cycles, because they might not be part of the repeating cycle yet
+                long remainderCycles = (cycles-x) % cadance;
+                // Make it so we only cycle the remainder amount of times
+                x = cycles - remainderCycles;
+                System.out.println("Found repeating pattern!");
+                cacheSkipped = true;
+            } else {
+                cache.put(field.round(), x);
+            }
+
             for (Direction direction : directions) {
                 long moving = 1L;
                 while (moving > 0) {
@@ -64,7 +83,7 @@ public class Main {
                 .mapToLong(r -> field.rows() - r.y())
                 .sum();
 
-        System.out.printf("Solved part 1, total weight: %s%n", weight);
+        System.out.printf("Solved part 2, total weight: %s%n", weight);
     }
 
     private static void solvePart1(Field field) {
