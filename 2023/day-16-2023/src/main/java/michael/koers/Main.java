@@ -3,13 +3,11 @@ package michael.koers;
 import util.Direction;
 import util.FileInput;
 import util.Point;
+import util.Stopwatch;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 public class Main {
 
@@ -21,21 +19,64 @@ public class Main {
 
         String[][] input = parseInput(read);
 
+        Stopwatch stopwatch = new Stopwatch();
         solvePart1(input);
+//        solvePart2(input);
+        stopwatch.print();
     }
+
+//    private static void solvePart2(String[][] input) {
+//
+//        long max = 0L;
+//
+//        // START TOP
+//        for (int i = 0; i < input[0].length; i++) {
+//            Light beam = new Light(new Point(i, -1), Direction.DOWN);
+//            System.out.printf("Calculating beam %s%n", beam);
+//            Set<Point> points = continueBeam(beam, input);
+//            cachedVisits.clear();
+//            if (points.size() > max) max = points.size();
+//        }
+//
+//        // START BOTTOM
+//        for (int i = 0; i < input[0].length; i++) {
+//            Light beam = new Light(new Point(i, input.length), Direction.UP);
+//            System.out.printf("Calculating beam %s%n", beam);
+//            Set<Point> points = continueBeam(beam, input);
+//            cachedVisits.clear();
+//            if (points.size() > max) max = points.size();
+//        }
+//        // START LEFT
+//        for (int i = 0; i < input.length; i++) {
+//            Light beam = new Light(new Point(-1, i), Direction.RIGHT);
+//            System.out.printf("Calculating beam %s%n", beam);
+//            Set<Point> points = continueBeam(beam, input);
+//            cachedVisits.clear();
+//            if (points.size() > max) max = points.size();
+//        }
+//        // START RIGHT
+//        for (int i = 0; i < input.length; i++) {
+//            Light beam = new Light(new Point(input[0].length, i), Direction.LEFT);
+//            System.out.printf("Calculating beam %s%n", beam);
+//            Set<Point> points = continueBeam(beam, input);
+//            cachedVisits.clear();
+//            if (points.size() > max) max = points.size();
+//        }
+//
+//        System.out.printf("Checked all paths, most covered tiles: %s%n", max - 1);
+//    }
 
     private static void solvePart1(String[][] field) {
         Light start = new Light(new Point(-1, 0), Direction.RIGHT);
-        Set<Point> points = continueBeam(start, field);
-
-        System.out.printf("Beam finished travelling, total tiles covered: %s%n", points.size() - 1);
+        Set<Point> tiles = continueBeam(start, field);
+        cachedVisits.clear();
+        System.out.printf("Beam finished travelling, total tiles covered: %s%n", tiles.size() - 1);
     }
 
     private static Set<Point> continueBeam(Light beam, String[][] field) {
-        System.out.printf("Beam at position %s, going %s%n", beam.position(), beam.direction());
+//        System.out.printf("Beam at position %s, going %s%n", beam.position(), beam.direction());
 
         if (cachedVisits.contains(beam)) {
-            System.out.printf("Cache hit, we already walked this point(%s) and direction(%s)%n", beam.position(), beam.direction());
             return new HashSet<>();
         } else {
             cachedVisits.add(beam);
@@ -53,7 +94,7 @@ public class Main {
                 || (nextPos.x() >= field.length && beam.direction() == Direction.RIGHT)
                 || (nextPos.y() < 0 && beam.direction() == Direction.UP)
                 || (nextPos.y() >= field[0].length && beam.direction() == Direction.DOWN)) {
-            System.out.printf("Hit out of bounds, end of beam %s%n", beam);
+//            System.out.printf("Hit out of bounds, end of beam %s%n", beam);
             return hits;
         }
 
@@ -62,10 +103,6 @@ public class Main {
 
         // Hit nothing
         switch (nextSpace) {
-            case "." -> {
-                hits.addAll(continueBeam(new Light(nextPos, beam.direction()), field));
-                return hits;
-            }
             case "/" -> {
                 hits.addAll(switch (beam.direction()) {
                     case LEFT -> continueBeam(new Light(nextPos, Direction.DOWN), field);
@@ -87,15 +124,14 @@ public class Main {
                 return hits;
             }
             case "|" -> {
-                System.out.printf("Beam %s splitting%n", beam);
+//                System.out.printf("Beam %s splitting%n", beam);
                 if (beam.direction().equals(Direction.DOWN) || beam.direction().equals(Direction.UP)) {
                     // nothing special
                     hits.addAll(continueBeam(new Light(nextPos, beam.direction()), field));
                     return hits;
                 } else if (beam.direction().equals(Direction.LEFT) || beam.direction().equals(Direction.RIGHT)) {
-                    // Send out light to the top
+                    // Send out light to the top & bottom
                     hits.addAll(continueBeam(new Light(nextPos, Direction.UP), field));
-                    // Send out light to the bottom
                     hits.addAll(continueBeam(new Light(nextPos, Direction.DOWN), field));
                     return hits;
                 }
@@ -106,15 +142,17 @@ public class Main {
                     hits.addAll(continueBeam(new Light(nextPos, beam.direction()), field));
                     return hits;
                 } else if (beam.direction().equals(Direction.UP) || beam.direction().equals(Direction.DOWN)) {
-                    // Send out light to the top
+                    // Send out light to the left & right
                     hits.addAll(continueBeam(new Light(nextPos, Direction.LEFT), field));
-                    // Send out light to the bottom
                     hits.addAll(continueBeam(new Light(nextPos, Direction.RIGHT), field));
                     return hits;
                 }
             }
+            default -> {
+                hits.addAll(continueBeam(new Light(nextPos, beam.direction()), field));
+                return hits;
+            }
         }
-        System.out.printf("nextSpace %s didn't hit any cases%n", nextSpace);
         return hits;
     }
 
