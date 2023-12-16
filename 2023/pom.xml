@@ -22,6 +22,7 @@
         <module>day-13-2023</module>
         <module>day-14-2023</module>
         <module>day-15-2023</module>
+        <module>day-16-2023</module>
     </modules>
 
     <modelVersion>4.0.0</modelVersion>
