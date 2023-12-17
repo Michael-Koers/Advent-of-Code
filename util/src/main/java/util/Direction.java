@@ -12,10 +12,24 @@ public enum Direction {
     RIGHT_UP(new Point(1, -1)),
     RIGHT_DOWN(new Point(1, 1)),
 
-    NONE(new Point(0,0));
+    NONE(new Point(0, 0));
     public final Point movement;
 
     Direction(Point movement) {
         this.movement = movement;
+    }
+
+    public Direction opposite() {
+        return switch (this) {
+            case RIGHT -> LEFT;
+            case UP -> DOWN;
+            case DOWN -> UP;
+            case LEFT -> RIGHT;
+            case LEFT_UP -> RIGHT_DOWN;
+            case LEFT_DOWN -> RIGHT_UP;
+            case RIGHT_UP -> LEFT_DOWN;
+            case RIGHT_DOWN -> LEFT_UP;
+            case NONE -> NONE;
+        };
     }
 }
