@@ -24,4 +24,7 @@ public class Node {
     @Builder.Default
     LinkedList<Node> shortestPath = new LinkedList<>();
 
+    public void addAdjacentNode(Node node, Integer cost){
+        this.adjacentNodes.put(node, cost);
+    }
 }

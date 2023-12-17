@@ -10,8 +10,9 @@ public enum Direction {
     LEFT_UP(new Point(-1, -1)),
     LEFT_DOWN(new Point(-1, 1)),
     RIGHT_UP(new Point(1, -1)),
-    RIGHT_DOWN(new Point(1, 1));
+    RIGHT_DOWN(new Point(1, 1)),
 
+    NONE(new Point(0,0));
     public final Point movement;
 
     Direction(Point movement) {
