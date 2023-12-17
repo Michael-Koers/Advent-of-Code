@@ -27,9 +27,10 @@ public class Main_2 {
     private static void solvePart1(Map<Point, Node> nodeMap, List<String> read) {
 
         Node start = nodeMap.get(new Point(0, 0));
+        Node end = nodeMap.get(new Point(read.size() - 1, read.get(0).length() - 1));
+
         start.setDistance(0);
 
-        Map<Point, Set<Direction>> visitedPoints = new HashMap<>();
         Set<Node> unvisitedNodes = new HashSet<>();
 
         unvisitedNodes.add(start);
@@ -44,22 +45,23 @@ public class Main_2 {
                 Direction direction = pair.getKey();
                 Node neighbour = pair.getValue();
 
+                // Can't do the same moves more than 3 times in a row
                 if (next.getSameDirectionCount() >= 3 && (next.getDirection().equals(direction))) {
                     continue;
                 }
 
-                // If we haven't visited this neighbour yet
-                if (!visitedPoints.containsKey(neighbour.getPosition()) || !visitedPoints.getOrDefault(neighbour.getPosition(), new HashSet<>()).contains(direction)) {
+                // If this path is already slower than this one, skip
+                if (next.getDistance() > end.getDistance()) {
+                    continue;
+                }
+
+                if (next.getDistance() + neighbour.getCost() < neighbour.getDistance()) {
                     updateNeighbourNode(next, neighbour, direction);
                     unvisitedNodes.add(neighbour);
                 }
-                Set<Direction> directions = visitedPoints.getOrDefault(neighbour.getPosition(), new HashSet<>());
-                directions.add(direction);
-                visitedPoints.put(neighbour.getPosition(), directions);
             }
         }
 
-        Node end = nodeMap.get(new Point(read.size() - 1, read.get(0).length() - 1));
         prettyPrint(end, read);
         System.out.printf("Solved part 1, total heat loss: %s%n", end.getDistance() + end.getCost() - start.getCost());
     }
@@ -70,7 +72,7 @@ public class Main_2 {
         for (int y = 0; y < read.size(); y++) {
             for (int x = 0; x < read.get(y).length(); x++) {
                 if (path.containsKey(new Point(x, y))) {
-                    switch (path.get(new Point(x,y))){
+                    switch (path.get(new Point(x, y))) {
                         case LEFT -> System.out.print("<");
                         case RIGHT -> System.out.print(">");
                         case UP -> System.out.print("^");
@@ -78,8 +80,7 @@ public class Main_2 {
                         case NONE -> System.out.print("S");
                         default -> System.out.print("?");
                     }
-                }
-                else {
+                } else {
                     System.out.print(read.get(y).charAt(x));
                 }
             }
@@ -178,7 +179,7 @@ final class Node {
         this.neighbours.put(direction, node);
     }
 
-    public int pathLength(){
+    public int pathLength() {
         return this.shortestPath.size();
     }
 };
