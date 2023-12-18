@@ -28,3 +28,7 @@ Objects in space
 Math
     Find first occurence of all numbers colliding       -> LCD
     Find greatest number that can divide all numbers    -> GCD
+
+Calculate Surface area
+    Trapezium               -> 1/2 * (sum of parallel sides) * trapezium height
+    Irregular Polygon       -> Picks theorem / Shoelace formula

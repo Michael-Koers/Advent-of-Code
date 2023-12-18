@@ -1,6 +1,6 @@
 package util;
 
-public record Point(int x, int y) {
+public record Point(long x, long y) {
 
     public boolean isAdjacent(Point other) {
         return (Math.abs(this.x - other.x) < 2) && (Math.abs(this.y - other.y) < 2);
