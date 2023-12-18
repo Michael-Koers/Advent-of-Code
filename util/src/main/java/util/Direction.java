@@ -32,4 +32,24 @@ public enum Direction {
             case NONE -> NONE;
         };
     }
+
+    public Direction left() {
+        return switch (this) {
+            case RIGHT -> UP;
+            case UP -> LEFT;
+            case LEFT -> DOWN;
+            case DOWN -> RIGHT;
+            default -> throw new UnsupportedOperationException("Direction " + this + " is not supported yet");
+        };
+    }
+
+    public Direction right() {
+        return switch (this) {
+            case RIGHT -> DOWN;
+            case DOWN -> LEFT;
+            case LEFT -> UP;
+            case UP -> RIGHT;
+            default -> throw new UnsupportedOperationException("Direction " + this + " is not supported yet");
+        };
+    }
 }
