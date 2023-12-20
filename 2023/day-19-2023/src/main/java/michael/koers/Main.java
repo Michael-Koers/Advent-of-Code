@@ -1,13 +1,11 @@
 package michael.koers;
 
 import util.FileInput;
+import util.Range;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) throws URISyntaxException, IOException, NoSuchFieldException {
@@ -16,7 +14,102 @@ public class Main {
 
         PartSystem system = parseInput(read);
 
-        solvePart1(system);
+//        solvePart1(system);
+        solvePart2(system);
+    }
+
+    private static void solvePart2(PartSystem system) throws NoSuchFieldException {
+
+        Combination combination = new Combination("in",
+                new Range(1, 4000),
+                new Range(1, 4000),
+                new Range(1, 4000),
+                new Range(1, 4000));
+
+        Queue<Combination> queue = new LinkedList<>();
+        queue.add(combination);
+
+        List<Combination> accepted = new ArrayList<>();
+
+        while (!queue.isEmpty()) {
+
+            Combination current = queue.poll();
+
+            // If this combination reached some kind of end, don't continue
+            if (current.step().equals("A")) {
+                System.out.printf("Accepted combination: %s%n", current);
+                accepted.add(current);
+                continue;
+            } else if (current.step().equals("R")) {
+                continue;
+            }
+
+            String unparsedRule = system.rules().get(current.step());
+
+            for (String rule : unparsedRule.split(",")) {
+
+                if (!rule.contains(":")) {
+                    queue.add(current.nextStep(rule));
+                } else {
+                    String field = rule.substring(0, 1);
+                    String op = rule.substring(1, 2);
+                    String next = rule.split(":")[1];
+                    long value = Long.parseLong(rule.substring(2, rule.indexOf(":")));
+
+                    // X field check
+                    if (field.equals("x") && combination.x().inRange(value)) {
+                        if (op.equals("<")) {
+                            // Have to split, everying that complies goes on queue, everything else continues
+                            queue.add(new Combination(next, new Range(current.x().start(), value - 1), current.m(), current.a(), current.s()));
+                            current = new Combination(current.step(), new Range(value, current.x().end()), current.m(), current.a(), current.s());
+                        } else {
+                            // Have to split, everying that complies goes on queue, everything else continues
+                            queue.add(new Combination(next, new Range(value+1, current.x().end()), current.m(), current.a(), current.s()));
+                            current = new Combination(current.step(), new Range(current.x().start(), value), current.m(), current.a(), current.s());
+                        }
+                    }
+                    // M field check
+                    else if (field.equals("m") && combination.m().inRange(value)) {
+                        if (op.equals("<")) {
+                            // Have to split, everying that complies goes on queue, everything else continues
+                            queue.add(new Combination(next, current.x(), new Range(current.m().start(), value - 1), current.a(), current.s()));
+                            current = new Combination(current.step(), current.x(), new Range(value, current.m().end()), current.a(), current.s());
+                        } else {
+                            // Have to split, everying that complies goes on queue, everything else continues
+                            queue.add(new Combination(next, current.x(), new Range(value+1, current.m().end()), current.a(), current.s()));
+                            current = new Combination(current.step(), current.x(), new Range(current.m().start(), value), current.a(), current.s());
+                        }
+                    }
+                    // A field check
+                    else if (field.equals("a") && combination.a().inRange(value)) {
+                        if (op.equals("<")) {
+                            // Have to split, everying that complies goes on queue, everything else continues
+                            queue.add(new Combination(next, current.x(), current.m(), new Range(current.a().start(), value - 1), current.s()));
+                            current = new Combination(current.step(), current.x(), current.m(), new Range(value, current.a().end()), current.s());
+                        } else {
+                            // Have to split, everying that complies goes on queue, everything else continues
+                            queue.add(new Combination(next, current.x(), current.m(), new Range(value+1, current.a().end()), current.s()));
+                            current = new Combination(current.step(), current.x(), current.m(), new Range(current.a().start(), value), current.s());
+                        }
+                    }
+                    // S field check
+                    else if (field.equals("s") && combination.s().inRange(value)) {
+                        if (op.equals("<")) {
+                            // Have to split, everying that complies goes on queue, everything else continues
+                            queue.add(new Combination(next, current.x(), current.m(), current.a(), new Range(current.s().start(), value - 1)));
+                            current = new Combination(current.step(), current.x(), current.m(), current.a(), new Range(value, current.s().end()));
+                        } else {
+                            // Have to split, everying that complies goes on queue, everything else continues
+                            queue.add(new Combination(next, current.x(), current.m(), current.a(), new Range(value+1, current.s().end())));
+                            current = new Combination(current.step(), current.x(), current.m(), current.a(), new Range(current.s().start(), value));
+                        }
+                    }
+                }
+            }
+        }
+
+        long combinations = accepted.stream().mapToLong(Combination::value).sum();
+        System.out.printf("Solved part 2, total distinct combinations: %s%n", combinations);
     }
 
     private static void solvePart1(PartSystem system) throws NoSuchFieldException {
@@ -113,7 +206,7 @@ public class Main {
 
         Map<String, String> flows = new HashMap<>();
         List<Part> parts = new ArrayList<>();
-        String startFlow = "";
+
         boolean readingFlows = true;
 
         for (String s : read) {
@@ -153,4 +246,15 @@ record Part(long x, long m, long a, long s) {
 };
 
 record Workflow(String[] rules) {
+};
+
+record Combination(String step, Range x, Range m, Range a, Range s) {
+
+    Combination nextStep(String step) {
+        return new Combination(step, this.x, this.m, this.a, this.s);
+    }
+
+    long value() {
+        return this.x.value() * this.m.value() * this.a.value() * this.s.value();
+    }
 };
