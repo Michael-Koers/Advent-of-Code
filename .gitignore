@@ -1,5 +1,5 @@
 # Ignore input/test-input
-*/resources/*.txt
+**/resources/*.txt
 
 # IntelliJ
 *.idea
