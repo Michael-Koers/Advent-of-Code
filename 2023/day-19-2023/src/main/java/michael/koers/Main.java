@@ -2,6 +2,7 @@ package michael.koers;
 
 import util.FileInput;
 import util.Range;
+import util.Stopwatch;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -15,7 +16,10 @@ public class Main {
         PartSystem system = parseInput(read);
 
 //        solvePart1(system);
+
+        Stopwatch stopwatch = new Stopwatch();
         solvePart2(system);
+        stopwatch.print();
     }
 
     private static void solvePart2(PartSystem system) throws NoSuchFieldException {
