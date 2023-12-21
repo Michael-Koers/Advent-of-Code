@@ -1,3 +1,6 @@
+# Ignore input/test-input
+resources/*.txt
+
 # IntelliJ
 *.idea
 *.iml
