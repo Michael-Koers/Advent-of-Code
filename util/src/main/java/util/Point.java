@@ -17,4 +17,9 @@ public record Point(long x, long y) {
     public Point moveDirection(Direction direction) {
         return new Point(this.x + direction.movement.x, this.y + direction.movement.y);
     }
+
+    @Override
+    public String toString() {
+        return "(" + x + "," + y + ")";
+    }
 }
