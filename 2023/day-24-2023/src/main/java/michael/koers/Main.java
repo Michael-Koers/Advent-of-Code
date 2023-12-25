@@ -21,7 +21,86 @@ public class Main {
 //        solvePart1(hailstones, 7L, 27L);
 
         // Real input
-        solvePart1(hailstones, 200000000000000L, 400000000000000L);
+//        solvePart1(hailstones, 200000000000000L, 400000000000000L);
+        solvePart2(hailstones);
+    }
+
+    private static void solvePart2(List<Hailstone> hailstones) {
+
+        // Straight up stolen from internet: https://pastebin.com/tFJ40WH6
+
+        Hailstone h1 = hailstones.get(0);
+        Hailstone h2 = hailstones.get(1);
+
+        int range = 500;
+        for (int vx = -range; vx <= range; vx++) {
+            for (int vy = -range; vy <= range; vy++) {
+                for (int vz = -range; vz <= range; vz++) {
+
+                    if (vx == 0 || vy == 0 || vz == 0) {
+                        continue;
+                    }
+
+                    // Find starting point for rock that will intercept first two hailstones (x,y) on this trajectory
+
+                    // simultaneous linear equation (from part 1):
+                    // H1:  x = A + a*t   y = B + b*t
+                    // H2:  x = C + c*u   y = D + d*u
+                    //
+                    //  t = [ d ( C - A ) - c ( D - B ) ] / ( a * d - b * c )
+                    //
+                    // Solve for origin of rock intercepting both hailstones in x,y:
+                    //     x = A + a*t - vx*t   y = B + b*t - vy*t
+                    //     x = C + c*u - vx*u   y = D + d*u - vy*u
+
+                    long A = h1.px(), a = h1.vx() - vx;
+                    long B = h1.py(), b = h1.vy() - vy;
+                    long C = h2.px(), c = h2.vx() - vx;
+                    long D = h2.py(), d = h2.vy() - vy;
+
+                    // skip if division by 0
+                    if (c == 0 || (a * d) - (b * c) == 0) {
+                        continue;
+                    }
+
+                    // Rock intercepts H1 at time t
+                    long t = (d * (C - A) - c * (D - B)) / ((a * d) - (b * c));
+
+                    // Calculate starting position of rock from intercept point
+                    long x = h1.px() + h1.vx() * t - vx * t;
+                    long y = h1.py() + h1.vy() * t - vy * t;
+                    long z = h1.pz() + h1.vz() * t - vz * t;
+
+
+                    // check if this rock throw will hit all hailstones
+
+                    boolean hitall = true;
+                    for (int i = 0; i < hailstones.size(); i++) {
+
+                        Hailstone h = hailstones.get(i);
+                        long u;
+                        if (h.vx() != vx) {
+                            u = (x - h.px()) / (h.vx() - vx);
+                        } else if (h.vy() != vy) {
+                            u = (y - h.py()) / (h.vy() - vy);
+                        } else if (h.vz() != vz) {
+                            u = (z - h.pz()) / (h.vz() - vz);
+                        } else {
+                            throw new RuntimeException();
+                        }
+
+                        if ((x + u * vx != h.px() + u * h.vx()) || (y + u * vy != h.py() + u * h.vy()) || ( z + u * vz != h.pz() + u * h.vz())) {
+                            hitall = false;
+                            break;
+                        }
+                    }
+
+                    if (hitall) {
+                        System.out.printf("%d %d %d   %d %d %d   %d %n", x, y, z, vx, vy, vz, x + y + z);
+                    }
+                }
+            }
+        }
     }
 
     private static void solvePart1(List<Hailstone> hailstones, long min, long max) {
