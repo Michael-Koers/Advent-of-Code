@@ -1,166 +1,167 @@
 package michael.koers;
 
+import lombok.Getter;
+import lombok.Setter;
 import util.Direction;
 import util.FileInput;
 import util.Point;
-import util.Stopwatch;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+// Needed a proper solution for part 2, see: https://www.youtube.com/watch?v=NTLYL7Mg2jU
 public class Main {
 
-    private static Map<Point, Pathpiece> pathCache = new HashMap<>();
+    private static Set<Point> seenCache = new HashSet<>();
 
     public static void main(String[] args) throws URISyntaxException, IOException {
 
         List<String> read = FileInput.read(FileInput.INPUT, Main.class);
 
-        Field field = parseInput(read);
+        Graph graph = parseInput(read);
+        connectNeighbours(read, graph, false);
 
-        // True for part 1, false for part 2
-        Stopwatch stopwatch = new Stopwatch();
-        solvePart1And2(field, false);
-        stopwatch.print();
+        System.out.println(dfs(graph, graph.start()));
     }
 
-    private static void solvePart1And2(Field field, boolean part1) {
+    private static long dfs(Graph g, Node node) {
+        if (g.end().equals(node)) {
+            return 0;
+        }
 
-        Deque<Path> queue = new LinkedList<>();
-        queue.add(new Path(field.start(), new HashSet<>()));
-        Set<Path> finishedPaths = new HashSet<>();
-        Long worst = 0L;
+        long m = -Long.MAX_VALUE;
 
-        while (!queue.isEmpty()) {
-
-            Path currentPath = queue.pollFirst();
-
-            // If we already visited this path once before, just skip to the end
-            if (pathCache.containsKey(currentPath.current())) {
-                Pathpiece cachedPath = pathCache.get(currentPath.current());
-                currentPath = currentPath.moveTo(cachedPath.end(), cachedPath.tiles());
+        seenCache.add(node.getPos());
+        for (Map.Entry<Point, Integer> neighbour : node.getNeighbours().entrySet()) {
+            if (!seenCache.contains(neighbour.getKey())) {
+                m = Math.max(m, dfs(g, g.getNode(neighbour.getKey())) + neighbour.getValue());
             }
+        }
+        seenCache.remove(node.getPos());
 
-            Set<Path> nextPaths = getNextSplit(currentPath, field, part1);
+        return m;
+    }
 
-            // If reached end, don't need to do anything more, otherwise, keep on walking
-            for (Path nextPath : nextPaths) {
-                if (nextPath.current().equals(field.end())) {
-                    if(nextPath.previous().size() > worst){
-                        System.out.printf("Reached worst end with %s steps%n", nextPath.previous().size());
-                        worst = (long) nextPath.previous().size();
+    private static void connectNeighbours(List<String> read, Graph graph, boolean isPart1) {
+
+        Set<Point> points = graph.nodes().stream().map(n -> n.pos).collect(Collectors.toSet());
+
+        Map<Character, List<Direction>> charDirections = new HashMap<>();
+        charDirections.put('^', List.of(Direction.UP));
+        charDirections.put('v', List.of(Direction.DOWN));
+        charDirections.put('<', List.of(Direction.LEFT));
+        charDirections.put('>', List.of(Direction.RIGHT));
+        charDirections.put('.', List.of(Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT));
+
+        for (Node node : graph.nodes()) {
+
+            Queue<Step> stack = new LinkedList<>();
+            stack.add(new Step(0, (int) node.pos.y(), (int) node.pos.x()));
+
+            Set<Point> seen = new HashSet<>();
+            seen.add(node.pos);
+
+            while (!stack.isEmpty()) {
+
+                Step nextStep = stack.poll();
+
+                if (nextStep.steps() != 0 && points.contains(nextStep.getPoint())) {
+                    node.addNeighbour(nextStep.getPoint(), nextStep.steps());
+                    continue;
+                }
+
+                char nextchar;
+
+                // In part one, we listen to the directions, in part 2, we consider everything '.'
+                if (isPart1) {
+                    nextchar = read.get(nextStep.row()).charAt(nextStep.col());
+                } else {
+                    nextchar = '.';
+                }
+
+                for (Direction direction : charDirections.get(nextchar)) {
+                    int ny = (int) (nextStep.row() + direction.movement.y());
+                    int nx = (int) (nextStep.col() + direction.movement.x());
+                    Point newPoint = new Point(nx, ny);
+                    if (ny >= 0 && ny < read.size()
+                            && nx >= 0 && nx < read.get(0).length()
+                            && read.get(ny).charAt(nx) != '#'
+                            && !seen.contains(newPoint)) {
+                        stack.add(new Step(nextStep.steps() + 1, (int) newPoint.y(), (int) newPoint.x()));
+                        seen.add(newPoint);
                     }
-                } else {
-                    queue.addFirst(nextPath);
                 }
             }
         }
 
-        System.out.printf("Found a total of %s path%n", finishedPaths.size());
-//        prettyPrint(field, finishedPaths.stream().map(Path::previous).max((p1, p2) -> p1.size() > p2.size() ? 1 : -1).get());
-        System.out.printf("Worst path took %s steps %n", worst);
+        System.out.println();
     }
 
-    private static void prettyPrint(Field field, Set<Point> points) {
-        for (int y = 0; y < field.map().length; y++) {
-            for (int x = 0; x < field.map()[0].length; x++) {
-                if (points.contains(new Point(x, y))) {
-                    System.out.print("O");
-                } else {
-                    System.out.print(field.map()[y][x]);
+    private static Graph parseInput(List<String> read) {
+
+        Node start = new Node(new Point(read.get(0).indexOf("."), 0));
+        Node end = new Node(new Point(read.getLast().lastIndexOf("."), read.size() - 1));
+        List<Point> points = new ArrayList<>();
+
+        for (int y = 0; y < read.size(); y++) {
+            for (int x = 0; x < read.get(y).length(); x++) {
+
+                if (read.get(y).charAt(x) == '#') {
+                    continue;
+                }
+
+                int neighbours = 0;
+
+                for (Direction direction : List.of(Direction.UP, Direction.RIGHT, Direction.DOWN, Direction.LEFT)) {
+                    int ny = (int) (y + direction.movement.y());
+                    int nx = (int) (x + direction.movement.x());
+
+                    if (ny >= 0 && ny < read.size() && nx >= 0 && nx < read.get(y).length() && read.get(ny).charAt(nx) != '#') {
+                        neighbours += 1;
+                    }
+                }
+                if (neighbours >= 3) {
+                    points.add(new Point(x, y));
                 }
             }
-            System.out.println();
         }
+        List<Node> collect = points.stream()
+                .map(Node::new)
+                .collect(Collectors.toList());
+        collect.add(start);
+        collect.add(end);
+        return new Graph(collect, start, end);
     }
 
-    private static Set<Path> getNextSplit(Path currentPath, Field field, boolean slopey) {
-
-        Queue<Point> nextSteps = new LinkedList<>();
-        Point start = currentPath.current();
-        nextSteps.add(start);
-        Set<Point> visited = new HashSet<>(currentPath.previous());
-
-        Set<Point> segment = new HashSet<>();
-        Point finalSegmentStep = start;
-
-        outer:
-        while (nextSteps.size() == 1) {
-
-            Point step = nextSteps.poll();
-            visited.add(step);
-            segment.add(step);
-            finalSegmentStep = step;
-
-            for (Direction direction : List.of(Direction.LEFT, Direction.UP, Direction.DOWN, Direction.RIGHT)) {
-
-                Point nextStep = step.moveDirection(direction);
-
-                // Don't walk over same path again
-                if (visited.contains(nextStep)) {
-                    continue;
-                }
-
-                // We reached the end, save this step
-                if (nextStep.equals(field.end())) {
-                    nextSteps.add(nextStep);
-                    break outer;
-                }
-
-                // Out of bounds check
-                if (nextStep.x() < 0 || nextStep.x() >= field.map().length || nextStep.y() < 0 || nextStep.y() >= field.map()[0].length) {
-                    continue;
-                }
-
-                // Can't step on rocks
-                if (field.map()[(int) nextStep.y()][(int) nextStep.x()].equals("#")) {
-                    continue;
-                }
-
-                // Make sure we only go down the slope if we come from the right direction
-                if (slopey && ((field.map()[(int) nextStep.y()][(int) nextStep.x()].equals(">") && !direction.equals(Direction.RIGHT))
-                        || (field.map()[(int) nextStep.y()][(int) nextStep.x()].equals("v") && !direction.equals(Direction.DOWN))
-                        || (field.map()[(int) nextStep.y()][(int) nextStep.x()].equals("<") && !direction.equals(Direction.LEFT))
-                        || (field.map()[(int) nextStep.y()][(int) nextStep.x()].equals("^") && !direction.equals(Direction.UP)))) {
-                    continue;
-                }
-
-                nextSteps.add(nextStep);
-            }
-        }
-
-        pathCache.put(start, new Pathpiece(finalSegmentStep, segment));
-
-        return nextSteps.stream()
-                .map(ns -> new Path(ns, visited))
-                .collect(Collectors.toSet());
-    }
-
-    private static Field parseInput(List<String> read) {
-        String[][] map = new String[read.size()][read.get(0).length()];
-
-        for (int i = 0; i < read.size(); i++) {
-
-            map[i] = read.get(i).split("");
-        }
-
-        return new Field(new Point(1L, 0L), new Point(read.get(0).length() - 2, read.size() - 1), map);
-    }
 }
 
-record Field(Point start, Point end, String[][] map) {
-};
+record Graph(List<Node> nodes, Node start, Node end) {
 
-record Path(Point current, Set<Point> previous) {
-
-    Path moveTo(Point next, Set<Point> tiles) {
-        Set<Point> newTiles = new HashSet<>(previous);
-        newTiles.addAll(tiles);
-        return new Path(next, newTiles);
+    Node getNode(Point p) {
+        return nodes.stream().filter(node -> node.pos.equals(p)).findFirst().orElseThrow(NoSuchElementException::new);
     }
 };
 
-record Pathpiece(Point end, Set<Point> tiles) {
+@Getter
+@Setter
+class Node {
+    Point pos;
+    Map<Point, Integer> neighbours = new HashMap<>();
+
+    public Node(Point pos) {
+        this.pos = pos;
+    }
+
+    public void addNeighbour(Point neighbour, Integer weight) {
+        this.neighbours.put(neighbour, weight);
+    }
+};
+
+record Step(int steps, int row, int col) {
+
+    Point getPoint() {
+        return new Point(col, row);
+    }
 };
