@@ -23,7 +23,7 @@ public class FileInput {
     public static List<String> read(int year, String day, FileType file) throws IOException {
         return Files.readAllLines(Path.of(
                 "".concat(String.valueOf(year))
-                        .concat("/src/day")
+                        .concat("/src/")
                         .concat(day)
                         .concat("/")
                         .concat(file.getType())));

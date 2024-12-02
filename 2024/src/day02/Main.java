@@ -1,6 +1,6 @@
 package day02;
 
-import util.FileInput;
+import config.Year2024;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -8,9 +8,10 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        List<String> lines = FileInput.read(2024, "02", FileInput.FileType.INPUT);
+        Day02 d = new Day02();
 
-        solve(lines);
+        solve(d.readInput());
+
     }
 
     private static void solve(List<String> lines) {
@@ -78,5 +79,17 @@ public class Main {
 
     public static boolean isSafe(int diff) {
         return Math.abs(diff) > 0 && Math.abs(diff) < 4;
+    }
+}
+
+class Day02 extends Year2024 {
+
+    @Override
+    public void solvePart1(List<String> lines) {
+    }
+
+    @Override
+    public void solvePart2(List<String> lines) {
+
     }
 }
