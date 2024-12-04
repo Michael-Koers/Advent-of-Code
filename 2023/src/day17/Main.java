@@ -64,15 +64,15 @@ public class Main {
                 }
 
                 // Check if left is in bounds
-                next = current.node().point().moveDirection(current.node().direction().left());
+                next = current.node().point().moveDirection(current.node().direction().turnLeft());
                 if (isInBounds(city, next) && current.node().steps() > 2) {
-                    unvisited.add(createPath(city, next, current, current.node().direction().left()));
+                    unvisited.add(createPath(city, next, current, current.node().direction().turnLeft()));
                 }
 
                 // Check if right is in bounds
-                next = current.node().point().moveDirection(current.node().direction().right());
+                next = current.node().point().moveDirection(current.node().direction().turnRight());
                 if (isInBounds(city, next) && current.node().steps() > 2) {
-                    unvisited.add(createPath(city, next, current, current.node().direction().right()));
+                    unvisited.add(createPath(city, next, current, current.node().direction().turnRight()));
                 }
             } else {
                 // Check if same direction is in bounds
@@ -82,15 +82,15 @@ public class Main {
                 }
 
                 // Check if left is in bounds
-                next = current.node().point().moveDirection(current.node().direction().left());
+                next = current.node().point().moveDirection(current.node().direction().turnLeft());
                 if (isInBounds(city, next)) {
-                    unvisited.add(createPath(city, next, current, current.node().direction().left()));
+                    unvisited.add(createPath(city, next, current, current.node().direction().turnLeft()));
                 }
 
                 // Check if right is in bounds
-                next = current.node().point().moveDirection(current.node().direction().right());
+                next = current.node().point().moveDirection(current.node().direction().turnRight());
                 if (isInBounds(city, next)) {
-                    unvisited.add(createPath(city, next, current, current.node().direction().right()));
+                    unvisited.add(createPath(city, next, current, current.node().direction().turnRight()));
                 }
             }
         }
