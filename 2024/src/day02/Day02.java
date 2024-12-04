@@ -6,15 +6,18 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class Main {
+public class Day02 extends Year2024 {
     public static void main(String[] args) throws IOException {
         Day02 d = new Day02();
 
-        solve(d.readInput());
-
+        d.stopwatch.start();
+        d.solvePart1(d.readInput());
+        d.stopwatch.prettyPrint();
     }
 
-    private static void solve(List<String> lines) {
+
+    @Override
+    public void solvePart1(List<String> lines) {
 
         int safeReports = 0;
         int safeReportsProblemDampener = 0;
@@ -69,7 +72,7 @@ public class Main {
     }
 
     private static boolean isSafe(int[] diffs) {
-        boolean safeDiffs = Arrays.stream(diffs).allMatch(Main::isSafe);
+        boolean safeDiffs = Arrays.stream(diffs).allMatch(Day02::isSafe);
 
         boolean allAscending = Arrays.stream(diffs).allMatch(d -> d < 0);
         boolean allDescending = Arrays.stream(diffs).allMatch(d -> d > 0);
@@ -79,13 +82,7 @@ public class Main {
 
     public static boolean isSafe(int diff) {
         return Math.abs(diff) > 0 && Math.abs(diff) < 4;
-    }
-}
 
-class Day02 extends Year2024 {
-
-    @Override
-    public void solvePart1(List<String> lines) {
     }
 
     @Override

@@ -1,6 +1,6 @@
 package day01;
 
-import util.FileInput;
+import config.Year2024;
 import util.Pair;
 import util.Stopwatch;
 
@@ -9,21 +9,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Main {
+public class Day01 extends Year2024 {
     public static void main(String[] args) throws IOException {
+        var d = new Day01();
 
-        List<String> lines = FileInput.read(2024, "01", FileInput.FileType.INPUT_TEST);
-
-        var stopwatch = new Stopwatch();
-        solvePart1(lines);
-        stopwatch.print();
-        solvePart2(lines);
-        stopwatch.stop();
-        stopwatch.print();
+        d.stopwatch.start();
+        d.solvePart1(d.readInput());
+        d.solvePart2(d.readInput());
+        d.stopwatch.prettyPrint();
 
     }
 
-    private static void solvePart2(List<String> lines) {
+    public void solvePart2(List<String> lines) {
         List<Integer> leftList = new ArrayList<>();
         List<Integer> rightList = new ArrayList<>();
 
@@ -47,7 +44,7 @@ public class Main {
         System.out.printf("Similarity score: %s%n", sum);
     }
 
-    private static void solvePart1(List<String> lines) {
+    public void solvePart1(List<String> lines) {
         List<Integer> leftList = new ArrayList<>();
         List<Integer> rightList = new ArrayList<>();
 
