@@ -1,5 +1,6 @@
 # Ignore input/test-input
 **input*.txt
+out/*
 
 # IntelliJ
 *.idea
