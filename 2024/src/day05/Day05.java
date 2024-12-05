@@ -42,7 +42,7 @@ public class Day05 extends Year2024 {
                 continue;
 
             }
-            System.out.printf("Valid line: %s%n", lines.get(i));
+//            System.out.printf("Valid line: %s%n", lines.get(i));
             sum += split.get((split.size() - 1) / 2);
         }
         System.out.println(sum);

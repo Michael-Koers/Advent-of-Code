@@ -1,6 +1,7 @@
 package util;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 public interface Year {
@@ -19,6 +20,14 @@ public interface Year {
                 , getPackage()
                 , FileInput.FileType.INPUT_TEST
         );
+    }
+
+    /**
+     * For reading files when running from native environment. This method will not find the file specified
+     * when running in a Jar or IDE.
+     */
+    default List<String> readNative(String filename, Class<?> clazz) throws IOException, URISyntaxException {
+        return FileInput.readNative(filename, clazz);
     }
 
     String getPackage();

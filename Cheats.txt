@@ -1,3 +1,10 @@
+Build native image:
+    native-image
+        -H:ResourceConfigurationFiles=./native-config.json
+        -H:Log=registerResource:5
+        -jar /path/to/jar
+    native-config.json file for including resources in native image
+
 Path finding
 
     Between two points

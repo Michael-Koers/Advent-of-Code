@@ -1,8 +1,6 @@
 package day01;
 
 import config.Year2024;
-import util.Pair;
-import util.Stopwatch;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,30 +13,28 @@ public class Day01 extends Year2024 {
 
         d.stopwatch.start();
         d.solvePart1(d.readInput());
+        d.stopwatch.print();
         d.solvePart2(d.readInput());
         d.stopwatch.prettyPrint();
-
     }
 
     public void solvePart2(List<String> lines) {
         List<Integer> leftList = new ArrayList<>();
         List<Integer> rightList = new ArrayList<>();
 
-        for (int i = 0; i < lines.size(); i++) {
-            var line = lines.get(i).trim();
-
-            leftList.add(Integer.parseInt(line.split(" {3}")[0].trim()));
-            rightList.add(Integer.parseInt(line.split(" {3}")[1].trim()));
+        for (String s : lines) {
+            leftList.add(Integer.parseInt(s.split(" {3}")[0].trim()));
+            rightList.add(Integer.parseInt(s.split(" {3}")[1].trim()));
         }
 
         Collections.sort(leftList);
         Collections.sort(rightList);
 
-        Long sum = 0L;
+        long sum = 0L;
 
-        for (int i = 0; i < leftList.size(); i++) {
-            int freq = Collections.frequency(rightList, leftList.get(i));
-            sum += (long) freq * leftList.get(i);
+        for (Integer integer : leftList) {
+            int freq = Collections.frequency(rightList, integer);
+            sum += (long) freq * integer;
         }
 
         System.out.printf("Similarity score: %s%n", sum);
@@ -48,11 +44,9 @@ public class Day01 extends Year2024 {
         List<Integer> leftList = new ArrayList<>();
         List<Integer> rightList = new ArrayList<>();
 
-        for (int i = 0; i < lines.size(); i++) {
-            var line = lines.get(i).trim();
-
-            int left = Integer.parseInt(line.split(" {3}")[0].trim());
-            int right = Integer.parseInt(line.split(" {3}")[1].trim());
+        for (String s : lines) {
+            int left = Integer.parseInt(s.substring(0, 5));
+            int right = Integer.parseInt(s.substring(8, 13));
 
             leftList.add(left);
             rightList.add(right);
@@ -61,16 +55,11 @@ public class Day01 extends Year2024 {
         Collections.sort(leftList);
         Collections.sort(rightList);
 
-        List<Pair> pairs = new ArrayList<>();
+        long sum = 0L;
         for (int i = 0; i < leftList.size(); i++) {
-            pairs.add(new Pair(leftList.get(i), rightList.get(i)));
+            sum += Math.abs(leftList.get(i) - rightList.get(i));
         }
-
-        long sum = pairs.stream()
-                .mapToLong(Pair::apart)
-                .sum();
 
         System.out.printf("Total distance: %s%n", sum);
     }
 }
-

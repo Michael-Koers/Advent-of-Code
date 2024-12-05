@@ -34,7 +34,7 @@ public class Stopwatch {
     }
 
     public void prettyPrint(PrintStream printStream) {
-        printStream.printf("Day: %s | Duration: %sms | ☕ JDK: %s %s%n",
+        printStream.printf("Day: %s | Java ☕ | Duration: %sms | JDK: %s %s%n",
                 this.day.replace("day", "")
                 , System.currentTimeMillis() - this.start
                 , System.getProperty("java.vendor")
