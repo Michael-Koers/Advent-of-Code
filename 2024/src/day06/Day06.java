@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Day06 extends Year2024 {
+
     public static void main(String[] args) throws IOException {
 
         var d = new Day06();
@@ -51,6 +52,8 @@ public class Day06 extends Year2024 {
         }
 
         System.out.printf("Total possible loops: %s%n", loops);
+
+
     }
 
     private boolean isLoopable(List<String> lines, Point guard) {
@@ -71,11 +74,10 @@ public class Day06 extends Year2024 {
             }
 
             if (isTileOccupied(nextPosition, lines)) {
+                visited.add(new Movement(nextPosition, direction));
                 direction = direction.turnRight();
                 continue;
             }
-
-            visited.add(new Movement(nextPosition, direction));
             guard = nextPosition;
         }
         return false;
