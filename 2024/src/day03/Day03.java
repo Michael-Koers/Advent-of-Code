@@ -11,8 +11,10 @@ public class Day03 extends Year2024 {
     public static void main(String[] args) throws IOException {
         Day03 d = new Day03();
 
+        var input = d.readInput();
+
         d.stopwatch.start();
-        d.solvePart1(d.readInput());
+        d.solvePart1(input);
         d.stopwatch.prettyPrint();
     }
 

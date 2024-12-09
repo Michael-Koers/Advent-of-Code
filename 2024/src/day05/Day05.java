@@ -12,8 +12,10 @@ public class Day05 extends Year2024 {
 
         var d = new Day05();
 
+        var input = d.readInput();
+
         d.stopwatch.start();
-        d.solvePart1(d.readInput());
+        d.solvePart1(input);
         d.stopwatch.prettyPrint();
     }
 
