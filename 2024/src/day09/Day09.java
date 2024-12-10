@@ -78,7 +78,7 @@ public class Day09 extends Year2024 {
 
             var character = Integer.parseInt(split[i]);
 
-            if (character == 0) continue;
+            if (character == 0) {continue;}
 
             // Empty
             if (i % 2 == 1) {
@@ -109,7 +109,7 @@ public class Day09 extends Year2024 {
                     .findFirst();
 
             // Current file can't be moved forward
-            if (emptyFieldOptional.isEmpty()) continue;
+            if (emptyFieldOptional.isEmpty()) {continue;}
 
             Block emptyBlock = emptyFieldOptional.get();
             blocks.remove(emptyBlock);
@@ -174,10 +174,6 @@ record Block(Space space, int length, int index) {
 
     Block moveIndex(int index) {
         return new Block(this.space, this.length, index);
-    }
-
-    Block appendEmpty(Block right, int extraSpace) {
-        return new Block(this.space, this.length + right.length + extraSpace, this.index);
     }
 
     long getValue() {
