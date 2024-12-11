@@ -4,9 +4,9 @@ import java.io.PrintStream;
 
 public class Stopwatch {
 
-    private Long start;
-    private Long end;
-    private Long duration;
+    private long start;
+    private long durationPart1;
+    private long durationPart2;
     private String day = "not set";
 
     public Stopwatch() {
@@ -34,21 +34,29 @@ public class Stopwatch {
     }
 
     public void prettyPrint(PrintStream printStream) {
-        printStream.printf("Day: %s | Java ☕ | Duration: %sms | JDK: %s %s %n",
+        printStream.printf("""
+                        🎄 Day: %s
+                        ☕ Java: %s %s
+                        🌟 Part 1: %sms
+                        🌟 Part 2: %sms
+                        ⌚ Total: %sms
+                        """,
                 this.day.replace("day", "")
-                , System.currentTimeMillis() - this.start
                 , System.getProperty("java.vendor")
-                , System.getProperty("java.version"));
+                , System.getProperty("java.version")
+                , this.durationPart1
+                , this.durationPart2
+                , this.durationPart1 + this.durationPart2
+        );
     }
 
-
-    public long duration() {
-        return this.end == null ? System.currentTimeMillis() - this.start : this.duration;
-    }
-
-    public void stop() {
-        this.end = System.currentTimeMillis();
-        this.duration = this.end - this.start;
+    public void time() {
+        if (this.durationPart1 == 0) {
+            this.durationPart1 = System.currentTimeMillis() - this.start;
+            this.start = System.currentTimeMillis();
+        } else {
+            this.durationPart2 = System.currentTimeMillis() - this.start;
+        }
     }
 
     public void reset() {

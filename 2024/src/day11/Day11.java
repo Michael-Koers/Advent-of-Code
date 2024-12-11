@@ -1,12 +1,9 @@
 package day11;
 
 import config.Year2024;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Day11 extends Year2024 {
@@ -15,15 +12,9 @@ public class Day11 extends Year2024 {
     List<Stone> stones = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
-
         var d = new Day11();
-
         var input = d.readInput();
-
-        d.stopwatch.start();
-        d.solvePart1(input);
-        d.solvePart2(input);
-        d.stopwatch.prettyPrint();
+        d.solve(input);
     }
 
     @Override
@@ -88,6 +79,7 @@ record Stone(Long value) {
     }
 }
 
-record Blinks(Stone stone, int blinksLeft) {}
+record Blinks(Stone stone, int blinksLeft) {
+}
 
 
