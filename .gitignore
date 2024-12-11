@@ -1,6 +1,7 @@
 # Ignore input/test-input
 **input*.txt
 out/*
+*.DS_Store
 
 # IntelliJ
 *.idea
