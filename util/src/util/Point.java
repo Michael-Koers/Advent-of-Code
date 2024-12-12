@@ -1,5 +1,7 @@
 package util;
 
+import java.util.List;
+
 public record Point(long x, long y) {
 
     public boolean isAdjacentDiagonally(Point other) {
@@ -9,6 +11,10 @@ public record Point(long x, long y) {
     public boolean isAdjacent(Point other) {
         return (Math.abs(this.x - other.x) == 1) && (Math.abs(this.y - other.y) == 0)
                 || (Math.abs(this.x - other.x) == 0) && (Math.abs(this.y - other.y) == 1);
+    }
+
+    public boolean anyAdjacent(List<Point> other) {
+        return other.stream().anyMatch(this::isAdjacent);
     }
 
     public Point moveTo(Point destination) {
