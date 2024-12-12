@@ -2,8 +2,13 @@ package util;
 
 public record Point(long x, long y) {
 
-    public boolean isAdjacent(Point other) {
+    public boolean isAdjacentDiagonally(Point other) {
         return (Math.abs(this.x - other.x) < 2) && (Math.abs(this.y - other.y) < 2);
+    }
+
+    public boolean isAdjacent(Point other) {
+        return (Math.abs(this.x - other.x) == 1) && (Math.abs(this.y - other.y) == 0)
+                || (Math.abs(this.x - other.x) == 0) && (Math.abs(this.y - other.y) == 1);
     }
 
     public Point moveTo(Point destination) {

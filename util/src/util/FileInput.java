@@ -33,13 +33,13 @@ public class FileInput {
         return Files.readAllLines(Path.of(path));
     }
 
-    public static List<String> read(int year, String day, FileType file) throws IOException {
+    public static List<String> read(int year, String day, String filename) throws IOException {
         return Files.readAllLines(Path.of(
                 "".concat(String.valueOf(year))
                         .concat("/src/")
                         .concat(day)
                         .concat("/")
-                        .concat(file.getType())));
+                        .concat(filename)));
     }
 
     public enum FileType {

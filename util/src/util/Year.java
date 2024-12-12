@@ -10,7 +10,7 @@ public interface Year {
         return FileInput.read(
                 getYear()
                 , getPackage()
-                , FileInput.FileType.INPUT
+                , FileInput.FileType.INPUT.getType()
         );
     }
 
@@ -18,7 +18,15 @@ public interface Year {
         return FileInput.read(
                 getYear()
                 , getPackage()
-                , FileInput.FileType.INPUT_TEST
+                , FileInput.FileType.INPUT_TEST.getType()
+        );
+    }
+
+    default List<String> readInput(String filename) throws IOException {
+        return FileInput.read(
+                getYear()
+                , getPackage()
+                , filename
         );
     }
 
