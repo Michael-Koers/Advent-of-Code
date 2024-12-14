@@ -10,11 +10,8 @@ import java.util.*;
 public class Day12 extends Year2024 {
 
     public static void main(String[] args) throws IOException {
-
         var d = new Day12();
-        d.solvePart2(d.readTestInput());
-
-
+        d.solvePart2(d.readInput());
     }
 
     @Override
@@ -27,8 +24,8 @@ public class Day12 extends Year2024 {
 
             int totalFences = 0;
 
-            for (final Point plant : area.plants()) {
-                int fences = getFences(plant, area.plants());
+            for (final Plant plant : area.plants()) {
+                int fences = getFences(plant.point(), area.plants().stream().map(Plant::point).toList());
                 totalFences += fences;
             }
 
@@ -53,8 +50,7 @@ public class Day12 extends Year2024 {
             }
         }
 
-        var areas = floodFillAreas(plants);
-        return areas;
+        return floodFillAreas(plants);
     }
 
     private List<Area> floodFillAreas(Set<Plant> plants) {
@@ -63,7 +59,8 @@ public class Day12 extends Year2024 {
         for (Plant plant : plants) {
 
             // Skip points already found
-            if (areas.stream().anyMatch(a -> a.plants().contains(plant.point()))) continue;
+            if (areas.stream().anyMatch(a -> a.plants().stream().map(Plant::point).toList().contains(plant.point())))
+                continue;
 
             var start = plant.point();
             var label = plant.label();
@@ -71,22 +68,22 @@ public class Day12 extends Year2024 {
             Queue<Point> toVisit = new ArrayDeque<>();
             toVisit.add(start);
 
-            List<Point> area = new ArrayList<>();
-            area.add(start);
+            List<Plant> area = new ArrayList<>();
+            area.add(plant);
 
             while (!toVisit.isEmpty()) {
                 var current = toVisit.poll();
                 for (Direction direction : List.of(Direction.UP, Direction.LEFT, Direction.RIGHT, Direction.DOWN)) {
 
                     var next = current.moveDirection(direction);
-
+                    var nextPlant = new Plant(label, next);
                     // Dont visit invalid locations
-                    if (!plants.contains(new Plant(label, next))) continue;
+                    if (!plants.contains(nextPlant)) continue;
 
                     // Dont go backwards
-                    if (area.contains(next)) continue;
+                    if (area.contains(nextPlant)) continue;
 
-                    area.add(next);
+                    area.add(nextPlant);
                     toVisit.add(next);
                 }
             }
@@ -117,59 +114,51 @@ public class Day12 extends Year2024 {
     public void solvePart2(final List<String> lines) {
         var areas = determineAreas(lines);
 
-        long totalPrice = 0;
-        for (Area area : areas) {
-
-            int minX = (int) area.plants().stream().mapToLong(Point::x).min().getAsLong()-1;
-            int maxX = (int) area.plants().stream().mapToLong(Point::x).max().getAsLong()+1;
-
-            int minY = (int) area.plants().stream().mapToLong(Point::y).min().getAsLong()-1;
-            int maxY = (int) area.plants().stream().mapToLong(Point::y).max().getAsLong()+1;
-
-            boolean inside = false;
-            int sides = 0;
-
-            for (int y = minY; y <= maxY; y++) {
-                for (int x = minX; x <= maxX; x++) {
-                    if (area.plants().contains(new Point(x, y))) {
-                        if (inside) continue;
-
-                        inside = true;
-                        sides++;
-                    } else {
-                        if (inside) sides++;
-                        inside = false;
-                    }
-                }
-            }
-
-            inside = false;
-
-            for (int x = minX; x <= maxX; x++) {
-                for (int y = minY; y <= maxY; y++) {
-                    if (area.plants().contains(new Point(x, y))) {
-                        if (inside) continue;
-
-                        inside = true;
-                        sides++;
-                    } else {
-                        if (inside) sides++;
-                        inside = false;
-                    }
-                }
-            }
-
-            System.out.printf("Area %s has %s sides %n", area.label(), sides);
-        }
+        System.out.printf("Part 2: %s%n",
+                areas.stream().mapToLong(Area::price).sum());
     }
 }
 
-record Plant(String label, Point point) {
+record Plant(String label, Point point) implements Comparable<Plant> {
+    Collection<Plant> edges() {
+        return Set.of(
+                new Plant(this.label, new Point(point.x(), point.y())),
+                new Plant(this.label, new Point(point.x(), point.y() + 1)),
+                new Plant(this.label, new Point(point.x() + 1, point.y())),
+                new Plant(this.label, new Point(point.x() + 1, point.y() + 1))
+        );
+    }
+
+    @Override
+    public int compareTo(Plant o) {
+        return this.point.y() == o.point.y() ? Long.compare(this.point.x(), o.point.x()) : Long.compare(this.point.y(), o.point.y());
+    }
 }
 
-record Area(String label, List<Point> plants) {
+record Area(String label, List<Plant> plants) {
 
     boolean isInside(Point point) {
-        return plants.contains(point);
+        return plants.stream().map(Plant::point).toList().contains(point);
+    }
+
+    int area() {
+        return plants.size();
+    }
+
+    long edges() {
+        Map<Plant, SortedSet<Plant>> edges = new HashMap<>();
+        for (Plant plant : plants) {
+            for (Plant edge : plant.edges()) {
+                edges.computeIfAbsent(edge, c -> new TreeSet<>());
+                edges.get(edge).add(plant);
+            }
+
+        }
+        long hidden = 2 * edges.values().stream().filter(s -> s.size() == 2 && !s.first().point().isAdjacent(s.last().point())).count();
+        return edges.values().stream().filter(s -> (s.size() & 1) == 1).count() + hidden;
+    }
+
+    long price() {
+        return area() * edges();
     }
 }

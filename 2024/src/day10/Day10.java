@@ -54,10 +54,8 @@ public class Day10 extends Year2024 {
                         continue;
                     }
 
-
                     var heightCurrent = getHeightOnPoint(current, lines);
                     var heightNext = getHeightOnPoint(next, lines);
-
 
                     if ((heightNext - heightCurrent) != 1) {continue;}
 
