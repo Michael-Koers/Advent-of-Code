@@ -1,26 +1,27 @@
 package day16;
 
 import config.Year2024;
-import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import org.jetbrains.annotations.NotNull;
 import util.Direction;
 import util.Point;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.PriorityQueue;
+
 public class Day16 extends Year2024 {
+    private Object i2;
+
     public static void main(String[] args) throws IOException {
 
         var d = new Day16();
 
-        var lines = d.readTestInput();
+        var lines = d.readInput();
 
+        d.stopwatch.start();
         d.solvePart1(lines);
-
+        d.stopwatch.print();
     }
 
     @Override
@@ -30,46 +31,46 @@ public class Day16 extends Year2024 {
         Path start = getPath(lines);
         Point end = getEnd(lines);
 
-        SortedSet<Path> paths = new TreeSet<>();
+        PriorityQueue<Path> paths = new PriorityQueue<>(Comparator.comparing(Path::score).reversed());
+//        Queue<Path> paths = new ArrayDeque<>();
         paths.add(start);
 
         int bestScore = Integer.MAX_VALUE;
-        Path bestPath = null;
 
         while (!paths.isEmpty()) {
 
-            var path = paths.first();
-            paths.remove(path);
+            var path = paths.remove();
 
             // This path is worse than the current best path, so don't continue it
-            if (path.score() >= bestScore) {return;}
+            if (path.score() > bestScore) continue;
 
             // Try all directions
-            for (final Direction direction : List.of(path.direction(), path.direction().turnLeft(), path.direction().turnRight())) {
+            for (final Direction direction : List.of(path.direction().turnLeft(), path.direction(), path.direction().turnRight())) {
 
-                var nextStep = path.moveDirection(direction);
+                var nextPath = path.moveDirection(direction);
 
                 // Don't go backwards
-                if (path.steps().contains(nextStep.current())) {continue;}
+                if (path.steps().contains(nextPath.current())) {
+                    continue;
+                }
 
                 // Don't walk into walls
-                if (walls.contains(nextStep.current())) {continue;}
-
-                var newPath = path.moveDirection(direction);
+                if (walls.contains(nextPath.current())) {
+                    continue;
+                }
 
                 // reached end
-                if (newPath.current().equals(end)) {
-                    bestScore = newPath.score();
-                    bestPath = newPath;
+                if (nextPath.current().equals(end)) {
+                    if (nextPath.score() < bestScore) {
+                        bestScore = nextPath.score();
+                    }
                 } else {
-                    paths.add(newPath);
+                    paths.add(nextPath);
                 }
             }
         }
 
-        System.out.println(bestPath.score());
-
-        prettyPrint(bestPath, end, walls);
+        System.out.println(bestScore);
     }
 
     private void prettyPrint(final Path bestPath, Point end, List<Point> walls) {
@@ -88,7 +89,8 @@ public class Day16 extends Year2024 {
                 } else if (bestPath.steps().contains(point)) {
                     System.out.print("P");
                 } else {
-                    System.out.print("."); ;
+                    System.out.print(".");
+                    ;
                 }
             }
             System.out.println();
@@ -157,18 +159,15 @@ public class Day16 extends Year2024 {
     }
 }
 
-record Path(List<Point> steps, Point current, Direction direction, int score) implements Comparable<Path> {
-    @Override
-    public int compareTo(@NotNull final Path o) {
-        return Integer.compare(score(), o.score);
-    }
+record Path(List<Point> steps, Point current, Direction direction, int score) {
 
-    Path moveDirection(Direction direction) {
-        int penalty = (direction() == direction) ? 1 : 1000;
+    Path moveDirection(Direction newDirection) {
+        int penalty = (this.direction.equals(newDirection)) ? 1 : 1001;
         var newSteps = new ArrayList<>(steps);
         newSteps.add(current);
-        return new Path(newSteps, current.moveDirection(direction), direction, score + penalty);
+        return new Path(newSteps, current.moveDirection(newDirection), newDirection, score + penalty);
     }
+
 }
 
 

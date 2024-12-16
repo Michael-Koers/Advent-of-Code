@@ -15,6 +15,7 @@ public class Day14 extends Year2024 {
 
         var lines = d.readInput();
 
+//        d.solvePart1(lines);
         d.solvePart2(lines);
     }
 
@@ -135,7 +136,7 @@ public class Day14 extends Year2024 {
 
             // Apparently at the moment of forming the Christmas tree, none of the robots overlap...
             if (collect.size() == robots.size()) {
-                prettyPrint(robots, width, length);
+                prettyPrint(tmp, width, length);
                 isChristmasTree = true;
             }
         }
