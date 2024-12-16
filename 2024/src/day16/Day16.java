@@ -5,19 +5,15 @@ import util.Direction;
 import util.Point;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class Day16 extends Year2024 {
-    private Object i2;
 
     public static void main(String[] args) throws IOException {
 
         var d = new Day16();
 
-        var lines = d.readInput();
+        var lines = d.readTestInput();
 
         d.stopwatch.start();
         d.solvePart1(lines);
@@ -28,83 +24,45 @@ public class Day16 extends Year2024 {
     public void solvePart1(final List<String> lines) {
 
         List<Point> walls = getWalls(lines);
-        Path start = getPath(lines);
+        Point start = getStart(lines);
         Point end = getEnd(lines);
 
-        PriorityQueue<Path> paths = new PriorityQueue<>(Comparator.comparing(Path::pathScore).reversed());
-//        Queue<Path> paths = new ArrayDeque<>();
-        paths.add(start);
+        Map<Point, Integer> pathScores = dijkstra(start, walls);
 
-        long bestScore = 2 * (walls.stream().mapToLong(Point::x).max().getAsLong() + walls.stream().mapToLong(Point::x).max().getAsLong()) * 1000;
-
-        while (!paths.isEmpty()) {
-
-            var path = paths.remove();
-
-            // This path is worse than the current best path, so don't continue it
-            if (path.score() > bestScore) {
-                continue;
-            }
-
-            // Try all directions
-            for (final Direction direction : List.of(path.direction().turnLeft(), path.direction(), path.direction().turnRight())) {
-
-                var nextPath = path.moveDirection(direction);
-
-                // Don't go backwards
-                if (path.steps().contains(nextPath.current())) {
-                    continue;
-                }
-
-                // Don't walk into walls
-                if (walls.contains(nextPath.current())) {
-                    continue;
-                }
-
-                // reached end
-                if (nextPath.current().equals(end) && nextPath.score() < bestScore) {
-                    System.out.println("Reached end, best score: " + nextPath.score() + ", paths left: " + paths.size());
-                    bestScore = nextPath.score();
-                    continue;
-                }
-
-                // Only add path if it was actually faster than a known path to the same location
-                if (paths.stream().noneMatch(p -> p.current() == nextPath.current() && p.score() <= nextPath.score())) {
-
-                    // Remove all paths that took longer to get to the same location
-                    paths.removeIf(p -> p.current() == nextPath.current() && p.score() >= nextPath.score());
-
-                    paths.add(nextPath);
-
-                }
-            }
-        }
-
-        System.out.println(bestScore);
+        System.out.println(pathScores.get(end));
     }
 
-    private void prettyPrint(final Path bestPath, Point end, List<Point> walls) {
+    Map<Point, Integer> dijkstra(Point start, List<Point> walls) {
+        Map<Point, Integer> distances = new HashMap<>();
+        distances.put(start, 0);
 
-        final long maxY = walls.stream().mapToLong(Point::y).max().getAsLong();
-        final long maxX = walls.stream().mapToLong(Point::x).max().getAsLong();
+        Queue<Path> queue = new ArrayDeque<>();
+        queue.add(new Path(start, Direction.RIGHT));
 
-        for (int y = 0; y <= maxY; y++) {
-            for (int x = 0; x <= maxX; x++) {
-                var point = new Point(x, y);
+        while (!queue.isEmpty()) {
 
-                if (walls.contains(point)) {
-                    System.out.print("#");
-                } else if (end.equals(point)) {
-                    System.out.print("E");
-                } else if (bestPath.steps().contains(point)) {
-                    System.out.print("P");
-                } else {
-                    System.out.print(".");
-                    ;
-                }
+            var current = queue.remove();
+            var distance = distances.get(current.position());
+
+            for (Direction direction : List.of(current.direction(), current.direction().turnLeft(), current.direction().turnRight())) {
+
+                var next = current.position().moveDirection(direction);
+
+                // Don't walk into walls
+                if (walls.contains(next)) continue;
+
+                int cost = distance + (current.direction().equals(direction) ? 1 : 1001);
+
+                if (cost >= distances.getOrDefault(next, Integer.MAX_VALUE)) continue;
+
+                distances.put(next, cost);
+                queue.add(new Path(next, direction));
+
             }
-            System.out.println();
+
         }
+
+        return distances;
     }
 
     private Point getEnd(final List<String> lines) {
@@ -127,7 +85,7 @@ public class Day16 extends Year2024 {
         return end;
     }
 
-    private Path getPath(final List<String> lines) {
+    private Point getStart(final List<String> lines) {
         Point start = null;
 
         outer:
@@ -144,7 +102,7 @@ public class Day16 extends Year2024 {
             }
         }
         assert start != null : "Start not found!";
-        return new Path(List.of(), start, Direction.RIGHT, 0, 0);
+        return start;
     }
 
     private List<Point> getWalls(final List<String> lines) {
@@ -169,17 +127,5 @@ public class Day16 extends Year2024 {
     }
 }
 
-record Path(List<Point> steps, Point current, Direction direction, int score, int pathScore) {
-
-    Path moveDirection(Direction newDirection) {
-        int penalty = (this.direction.equals(newDirection)) ? 1 : 1001;
-        var newSteps = new ArrayList<>(steps);
-        newSteps.add(current);
-
-        var newPathScore = pathScore + ((newDirection.equals(Direction.UP) || newDirection.equals(Direction.RIGHT)) ? 1 : 0);
-        return new Path(newSteps, current.moveDirection(newDirection), newDirection, score + penalty, newPathScore);
-    }
-
+record Path(Point position, Direction direction) {
 }
-
-
