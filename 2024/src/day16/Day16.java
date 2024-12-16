@@ -31,18 +31,20 @@ public class Day16 extends Year2024 {
         Path start = getPath(lines);
         Point end = getEnd(lines);
 
-        PriorityQueue<Path> paths = new PriorityQueue<>(Comparator.comparing(Path::score).reversed());
+        PriorityQueue<Path> paths = new PriorityQueue<>(Comparator.comparing(Path::pathScore).reversed());
 //        Queue<Path> paths = new ArrayDeque<>();
         paths.add(start);
 
-        int bestScore = Integer.MAX_VALUE;
+        long bestScore = 2 * (walls.stream().mapToLong(Point::x).max().getAsLong() + walls.stream().mapToLong(Point::x).max().getAsLong()) * 1000;
 
         while (!paths.isEmpty()) {
 
             var path = paths.remove();
 
             // This path is worse than the current best path, so don't continue it
-            if (path.score() > bestScore) continue;
+            if (path.score() > bestScore) {
+                continue;
+            }
 
             // Try all directions
             for (final Direction direction : List.of(path.direction().turnLeft(), path.direction(), path.direction().turnRight())) {
@@ -60,12 +62,20 @@ public class Day16 extends Year2024 {
                 }
 
                 // reached end
-                if (nextPath.current().equals(end)) {
-                    if (nextPath.score() < bestScore) {
-                        bestScore = nextPath.score();
-                    }
-                } else {
+                if (nextPath.current().equals(end) && nextPath.score() < bestScore) {
+                    System.out.println("Reached end, best score: " + nextPath.score() + ", paths left: " + paths.size());
+                    bestScore = nextPath.score();
+                    continue;
+                }
+
+                // Only add path if it was actually faster than a known path to the same location
+                if (paths.stream().noneMatch(p -> p.current() == nextPath.current() && p.score() <= nextPath.score())) {
+
+                    // Remove all paths that took longer to get to the same location
+                    paths.removeIf(p -> p.current() == nextPath.current() && p.score() >= nextPath.score());
+
                     paths.add(nextPath);
+
                 }
             }
         }
@@ -134,7 +144,7 @@ public class Day16 extends Year2024 {
             }
         }
         assert start != null : "Start not found!";
-        return new Path(List.of(), start, Direction.RIGHT, 0);
+        return new Path(List.of(), start, Direction.RIGHT, 0, 0);
     }
 
     private List<Point> getWalls(final List<String> lines) {
@@ -159,13 +169,15 @@ public class Day16 extends Year2024 {
     }
 }
 
-record Path(List<Point> steps, Point current, Direction direction, int score) {
+record Path(List<Point> steps, Point current, Direction direction, int score, int pathScore) {
 
     Path moveDirection(Direction newDirection) {
         int penalty = (this.direction.equals(newDirection)) ? 1 : 1001;
         var newSteps = new ArrayList<>(steps);
         newSteps.add(current);
-        return new Path(newSteps, current.moveDirection(newDirection), newDirection, score + penalty);
+
+        var newPathScore = pathScore + ((newDirection.equals(Direction.UP) || newDirection.equals(Direction.RIGHT)) ? 1 : 0);
+        return new Path(newSteps, current.moveDirection(newDirection), newDirection, score + penalty, newPathScore);
     }
 
 }
