@@ -9,6 +9,8 @@ import java.util.*;
 
 public class Day16 extends Year2024 {
 
+    Map<Path, Set<Point>> shortestPaths = new HashMap<>();
+
     public static void main(String[] args) throws IOException {
 
         var d = new Day16();
@@ -27,41 +29,55 @@ public class Day16 extends Year2024 {
         Point start = getStart(lines);
         Point end = getEnd(lines);
 
-        Map<Point, Integer> pathScores = dijkstra(start, walls);
+        Map<Path, Integer> pathScores = dijkstra(start, walls);
 
-        System.out.println(pathScores.get(end));
+        var bestPath = pathScores.entrySet().stream().filter(p -> p.getKey().position().equals(end)).min(Comparator.comparingInt(Map.Entry::getValue));
+        bestPath.ifPresent(System.out::println);
+        bestPath.ifPresent(bp -> System.out.println(shortestPaths.get(bp.getKey()).size()+1));
     }
 
-    Map<Point, Integer> dijkstra(Point start, List<Point> walls) {
-        Map<Point, Integer> distances = new HashMap<>();
-        distances.put(start, 0);
+    Map<Path, Integer> dijkstra(Point start, List<Point> walls) {
+        var startPath = new Path(start, Direction.RIGHT);
+        Map<Path, Integer> distances = new HashMap<>();
+        distances.put(startPath, 0);
 
         Queue<Path> queue = new ArrayDeque<>();
-        queue.add(new Path(start, Direction.RIGHT));
+        queue.add(startPath);
+
+        shortestPaths.put(startPath, new HashSet<>());
 
         while (!queue.isEmpty()) {
 
             var current = queue.remove();
-            var distance = distances.get(current.position());
+            var distance = distances.get(current);
 
             for (Direction direction : List.of(current.direction(), current.direction().turnLeft(), current.direction().turnRight())) {
 
                 var next = current.position().moveDirection(direction);
+                var nextPath = new Path(next, direction);
 
                 // Don't walk into walls
-                if (walls.contains(next)) continue;
+                if (walls.contains(next)) {continue;}
 
                 int cost = distance + (current.direction().equals(direction) ? 1 : 1001);
 
-                if (cost >= distances.getOrDefault(next, Integer.MAX_VALUE)) continue;
+                if (cost > distances.getOrDefault(nextPath, Integer.MAX_VALUE)) {continue;}
 
-                distances.put(next, cost);
-                queue.add(new Path(next, direction));
+                distances.put(nextPath, cost);
+                queue.add(nextPath);
 
+                // If we found a shorter path, forget the previous quickest path
+                if(cost < distances.getOrDefault(nextPath, Integer.MAX_VALUE)){
+                    shortestPaths.remove(nextPath);
+                }
+
+                var newPath = new HashSet<>(shortestPaths.get(current));
+
+                newPath.addAll(shortestPaths.getOrDefault(nextPath, new HashSet<>()));
+                newPath.add(current.position());
+                shortestPaths.put(nextPath, newPath);
             }
-
         }
-
         return distances;
     }
 
