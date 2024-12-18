@@ -9,16 +9,22 @@ import java.util.*;
 
 public class Day16 extends Year2024 {
 
-    Map<Path, Set<Point>> shortestPaths = new HashMap<>();
+    int bestScore = 0;
+
+    // Caching! /s
+    List<Point> walls;
+    Point start;
+    Point end;
 
     public static void main(String[] args) throws IOException {
 
         var d = new Day16();
 
-        var lines = d.readTestInput();
+        var lines = d.readInput();
 
         d.stopwatch.start();
         d.solvePart1(lines);
+        d.solvePart2(lines);
         d.stopwatch.print();
     }
 
@@ -31,20 +37,24 @@ public class Day16 extends Year2024 {
 
         Map<Path, Integer> pathScores = dijkstra(start, walls);
 
-        var bestPath = pathScores.entrySet().stream().filter(p -> p.getKey().position().equals(end)).min(Comparator.comparingInt(Map.Entry::getValue));
-        bestPath.ifPresent(System.out::println);
-        bestPath.ifPresent(bp -> System.out.println(shortestPaths.get(bp.getKey()).size()+1));
+        int lowestScore = pathScores
+                .entrySet()
+                .stream()
+                .filter((k) -> k.getKey().position().equals(end))
+                .map(Map.Entry::getValue)
+                .findFirst().get();
+        System.out.println("Part 1: " + lowestScore);
+        bestScore = lowestScore;
     }
 
     Map<Path, Integer> dijkstra(Point start, List<Point> walls) {
         var startPath = new Path(start, Direction.RIGHT);
+
         Map<Path, Integer> distances = new HashMap<>();
         distances.put(startPath, 0);
 
         Queue<Path> queue = new ArrayDeque<>();
         queue.add(startPath);
-
-        shortestPaths.put(startPath, new HashSet<>());
 
         while (!queue.isEmpty()) {
 
@@ -57,31 +67,28 @@ public class Day16 extends Year2024 {
                 var nextPath = new Path(next, direction);
 
                 // Don't walk into walls
-                if (walls.contains(next)) {continue;}
+                if (walls.contains(next)) {
+                    continue;
+                }
 
                 int cost = distance + (current.direction().equals(direction) ? 1 : 1001);
 
-                if (cost > distances.getOrDefault(nextPath, Integer.MAX_VALUE)) {continue;}
+                if (cost > distances.getOrDefault(nextPath, Integer.MAX_VALUE)) {
+                    continue;
+                }
 
                 distances.put(nextPath, cost);
                 queue.add(nextPath);
 
-                // If we found a shorter path, forget the previous quickest path
-                if(cost < distances.getOrDefault(nextPath, Integer.MAX_VALUE)){
-                    shortestPaths.remove(nextPath);
-                }
-
-                var newPath = new HashSet<>(shortestPaths.get(current));
-
-                newPath.addAll(shortestPaths.getOrDefault(nextPath, new HashSet<>()));
-                newPath.add(current.position());
-                shortestPaths.put(nextPath, newPath);
             }
         }
         return distances;
     }
 
     private Point getEnd(final List<String> lines) {
+        // Caching!
+        if (this.end != null) return this.end;
+
         Point end = null;
 
         outer:
@@ -98,10 +105,14 @@ public class Day16 extends Year2024 {
             }
         }
         assert end != null : "End not found!";
+        this.end = end;
         return end;
     }
 
     private Point getStart(final List<String> lines) {
+        // Caching!
+        if (this.start != null) return this.start;
+
         Point start = null;
 
         outer:
@@ -118,10 +129,13 @@ public class Day16 extends Year2024 {
             }
         }
         assert start != null : "Start not found!";
+        this.start = start;
         return start;
     }
 
     private List<Point> getWalls(final List<String> lines) {
+        // Caching!
+        if (walls != null) return walls;
         List<Point> walls = new ArrayList<>();
         for (int y = 0; y < lines.size(); y++) {
             var line = lines.get(y).split("");
@@ -134,14 +148,90 @@ public class Day16 extends Year2024 {
 
             }
         }
+        this.walls = walls;
         return walls;
     }
 
     @Override
     public void solvePart2(final List<String> lines) {
 
+        int steps = bestScore % 1000;
+        int turns = bestScore / 1000;
+
+        var start = getStart(lines);
+        var end = getEnd(lines);
+        var walls = getWalls(lines);
+
+        int tiles = reverseDijkstra(start, end, walls, steps, turns, bestScore);
+
+        System.out.println("Part 2: " + tiles);
+    }
+
+    private int reverseDijkstra(Point start, Point end, List<Point> walls, int maxSteps, int maxTurns, int bestScore) {
+
+        var startPath = new Path(start, Direction.RIGHT);
+
+        Map<Path, Integer> distances = new HashMap<>();
+        distances.put(startPath, 0);
+
+        Queue<PathHistory> paths = new ArrayDeque<>();
+        paths.add(new PathHistory(startPath, 0, 0, List.of(start)));
+
+        Set<Point> tilesToEnd = new HashSet<>();
+        tilesToEnd.add(end);
+
+        while (!paths.isEmpty()) {
+
+            var current = paths.poll();
+            var distance = distances.get(current.path());
+
+            for (Direction direction : List.of(current.path().direction(), current.path().direction().turnLeft(), current.path().direction().turnRight())) {
+
+                var nextPosition = current.path().position().moveDirection(direction);
+                var nextPath = new Path(nextPosition, direction);
+
+                if (nextPosition.equals(end)) {
+                    tilesToEnd.addAll(current.history());
+                    continue;
+                }
+                if (walls.contains(nextPosition)) continue;
+
+                int extraCost;
+                int extraTurns = 0;
+                if (current.path().direction().equals(direction)) {
+                    extraCost = 1;
+                } else {
+                    extraCost = 1001;
+                    extraTurns = 1;
+                }
+
+                int cost = distance + extraCost;
+
+                // Cost is getting too high
+                if (cost > distances.getOrDefault(nextPath, Integer.MAX_VALUE)) continue;
+                if (cost > bestScore) continue;
+
+                var nextSteps = new ArrayList<>(current.history());
+                nextSteps.add(nextPosition);
+                var nextHistory = new PathHistory(nextPath, current.stepsTaken() + 1, current.turnsTaken() + extraTurns, nextSteps);
+
+                // Too many steps / turns
+                if (nextHistory.stepsTaken() > maxSteps) continue;
+                if (nextHistory.turnsTaken() > maxTurns) continue;
+
+                distances.put(nextPath, cost);
+                paths.add(nextHistory);
+
+            }
+
+        }
+
+        return tilesToEnd.size();
     }
 }
 
 record Path(Point position, Direction direction) {
+}
+
+record PathHistory(Path path, int stepsTaken, int turnsTaken, List<Point> history) {
 }
