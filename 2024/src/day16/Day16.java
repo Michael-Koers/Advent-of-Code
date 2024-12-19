@@ -14,7 +14,7 @@ public class Day16 extends Year2024 {
 
         var d = new Day16();
 
-        var lines = d.readTestInput();
+        var lines = d.readInput();
 
         d.stopwatch.start();
         d.solvePart1(lines);
@@ -36,17 +36,21 @@ public class Day16 extends Year2024 {
                 .stream()
                 .filter((k) -> k.getKey().position().equals(end))
                 .map(Map.Entry::getValue)
+                .sorted(Comparator.comparingInt(Node::score))
                 .findFirst().get();
 
         System.out.println("Part 1: " + lowestScore.score());
-        System.out.println("Part 2: " + lowestScore.getSize());
+
+        // Part 2 didn't work
+        System.out.println("Part 2: " + lowestScore.path().size());
     }
+
 
     Map<Path, Node> dijkstra(Point start, List<Point> walls) {
         var startPath = new Path(start, Direction.RIGHT);
 
         Map<Path, Node> distances = new HashMap<>();
-        distances.put(startPath, new Node(0, List.of(start)));
+        distances.put(startPath, new Node(0, Set.of(startPath)));
 
         Queue<Path> queue = new ArrayDeque<>();
         queue.add(startPath);
@@ -60,15 +64,25 @@ public class Day16 extends Year2024 {
                 var nextPosition = current.position().moveDirection(direction);
                 var nextPath = new Path(nextPosition, direction);
 
-                if (walls.contains(nextPosition)) {continue;}
+                if (walls.contains(nextPosition)) {
+                    continue;
+                }
 
                 var node = distances.get(current);
                 int cost = current.direction().equals(direction) ? 1 : 1001;
 
-                if(node.score() + cost > distances.getOrDefault(nextPath, new Node(Integer.MAX_VALUE, List.of())).score()) { continue;}
+                if (node.score() + cost > distances.getOrDefault(nextPath, new Node(Integer.MAX_VALUE, Set.of())).score()) {
+                    continue;
+                }
 
-                queue.add(nextPath);
-                distances.put(nextPath, node.addScore(cost).addPath(nextPosition));
+                // If paths are equal, merge histories, otherwise overwrite
+                if (node.score() + cost == distances.getOrDefault(nextPath, new Node(Integer.MAX_VALUE, Set.of())).score()) {
+                    distances.computeIfPresent(nextPath, (k, nextNode) -> nextNode.addScore(cost).addPath(node.path()).addPath(nextPath));
+                } else {
+                    queue.add(nextPath);
+                    distances.put(nextPath, node.addScore(cost).addPath(nextPath));
+                }
+
 
             }
         }
@@ -142,19 +156,22 @@ record Path(Point position, Direction direction) {
 
 }
 
-record Node(int score, List<Point> path) {
+record Node(int score, Set<Path> path) {
 
     Node addScore(int score) {
         return new Node(this.score + score, this.path);
     }
 
-    Node addPath(Point point) {
-        var tmp = new ArrayList<>(this.path);
+    Node addPath(Path point) {
+        var tmp = new HashSet<>(this.path);
         tmp.add(point);
         return new Node(this.score, tmp);
     }
 
-    int getSize() {
-        return Set.of(this.path).size();
+    Node addPath(Set<Path> points) {
+        var tmp = new HashSet<>(this.path);
+        tmp.addAll(points);
+        return new Node(this.score, tmp);
     }
+
 }
