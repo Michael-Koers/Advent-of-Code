@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Main {
+public class ∑∑∑Main {
     public static void main(String[] args) throws URISyntaxException, IOException {
 
         List<String> lines = FileInput.read(FileInput.INPUT, Main.class);
