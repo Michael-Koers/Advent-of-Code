@@ -40,9 +40,10 @@ public class Day20 extends Year2024 {
         List<Integer> cheats = new ArrayList<>();
 
         for (TrackTile trackTile : trackTiles) {
+
             List<Integer> cheatable = trackTiles.stream()
-                    // Don't cheat backwards
-                    .filter(t -> t.picoseconds() > trackTile.picoseconds())
+                    // Don't cheat backwards (technically not needed, but apparently has a big impact on performance)
+//                    .filter(t -> t.picoseconds() > trackTile.picoseconds())
                     // Check if there are tracks within cheating distance by using Manhattan Distance
                     .filter(t -> t.point().manhattanDistance(trackTile.point()) > 1 && t.point().manhattanDistance(trackTile.point()) <= maxCheatDistance)
                     // Remember the save we can cheat (positions are irrelevant for the answer)
@@ -50,6 +51,7 @@ public class Day20 extends Year2024 {
                     .toList();
 
             cheats.addAll(cheatable);
+
         }
         return cheats;
     }
@@ -79,7 +81,7 @@ public class Day20 extends Year2024 {
                 var next = current.moveDirection(d);
 
                 // Don't run into walls (not yet)
-                if (track.walls().contains(next)) continue;
+                if (track.walls().contains(next)) {continue;}
 
                 // Reached end
                 if (track.end().equals(next)) {
