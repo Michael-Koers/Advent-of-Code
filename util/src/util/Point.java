@@ -29,6 +29,19 @@ public record Point(long x, long y) {
         return new Point(this.x + direction.movement.x, this.y + direction.movement.y);
     }
 
+    public long manhattanDistance(Point other) {
+        return (Math.abs(this.x() - other.x()) + Math.abs(this.y() - other.y()));
+    }
+
+    public List<Point> getNeighbours() {
+        return List.of(
+                new Point(this.x + 1, y),
+                new Point(this.x - 1, y),
+                new Point(this.x, y + 1),
+                new Point(this.x, y - 1)
+        );
+    }
+
     @Override
     public String toString() {
         return "(" + x + "," + y + ")";
