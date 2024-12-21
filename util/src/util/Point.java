@@ -17,6 +17,10 @@ public record Point(long x, long y) {
         return other.stream().anyMatch(this::isAdjacent);
     }
 
+    public Point difference(Point other) {
+        return new Point(other.x - this.x, other.y - this.y);
+    }
+
     public Point moveTo(Point destination) {
         return new Point(destination.x, destination.y);
     }

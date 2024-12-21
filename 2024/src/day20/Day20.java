@@ -42,7 +42,7 @@ public class Day20 extends Year2024 {
         for (TrackTile trackTile : trackTiles) {
             List<Integer> cheatable = trackTiles.stream()
                     // Don't cheat backwards
-                    .filter(t -> t.picoseconds() > trackTile.picoseconds())
+//                    .filter(t -> t.picoseconds() > trackTile.picoseconds())
                     // Check if there are tracks within cheating distance by using Manhattan Distance
                     .filter(t -> t.point().manhattanDistance(trackTile.point()) > 1 && t.point().manhattanDistance(trackTile.point()) <= maxCheatDistance)
                     // Remember the save we can cheat (positions are irrelevant for the answer)
