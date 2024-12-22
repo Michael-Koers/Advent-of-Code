@@ -35,11 +35,7 @@ public class Stopwatch {
 
     public void prettyPrint(PrintStream printStream) {
         printStream.printf("""
-                        🎄 Day: %s
-                        ☕ Java: %s %s
-                        🌟 Part 1: %sms
-                        🌟 Part 2: %sms
-                        ⌚ Total: %sms
+                        🎄 Day: %s | ☕ Java: %s %s | 🌟 Part 1: %sms | 🌟 Part 2: %sms | ⌚ Total: %sms
                         """,
                 this.day.replace("day", "")
                 , System.getProperty("java.vendor")
