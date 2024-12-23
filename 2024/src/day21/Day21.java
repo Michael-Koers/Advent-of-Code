@@ -122,7 +122,7 @@ public class Day21 extends Year2024 {
     List<String> translatePointToInstruction(Point toMove) {
         List<String> inputs = new ArrayList<>();
 
-        if (toMove.x() != 0) {
+        moveX: while (toMove.x() != 0) {
             if (toMove.x() < 0) {
                 for (long i = 0; i > toMove.x(); i--) {
                     inputs.add("<");
@@ -134,7 +134,7 @@ public class Day21 extends Year2024 {
                 }
             }
         }
-        if (toMove.y() != 0) {
+        moveY: while (toMove.y() != 0) {
             if (toMove.y() < 0) {
                 for (long i = 0; i > toMove.y(); i--) {
                     inputs.add("^");
@@ -146,6 +146,7 @@ public class Day21 extends Year2024 {
                 }
             }
         }
+
         inputs.add("A");
         return inputs;
     }
