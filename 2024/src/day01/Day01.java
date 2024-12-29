@@ -1,6 +1,7 @@
 package day01;
 
 import config.Year2024;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,12 +58,4 @@ public class Day01 extends Year2024 {
 
         System.out.printf("Total distance: %s%n", sum);
     }
-
-    // Why use computer resources for sorting if we can use the endlessness of Time.
-//    List<Integer> sleepSort(List<Integer> toSort){
-//        toSort.stream().
-//
-//
-//    }
-
 }
