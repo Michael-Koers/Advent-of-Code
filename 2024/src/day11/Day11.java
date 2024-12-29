@@ -21,7 +21,7 @@ public class Day11 extends Year2024 {
         stones = Arrays.stream(lines.getFirst().split(" ")).map(Long::parseLong).toList();
 
         long sum = 0;
-        for (final Long stone : stones) {
+        for (Long stone : stones) {
             sum += blink(stone, 25);
         }
 
@@ -32,7 +32,7 @@ public class Day11 extends Year2024 {
     public void solvePart2(final List<String> lines) {
 
         long sum = 0;
-        for (final Long stone : stones) {
+        for (Long stone : stones) {
             sum += blink(stone, 75);
         }
 
@@ -46,9 +46,7 @@ public class Day11 extends Year2024 {
             return cache.get(cacheKey);
         }
 
-        if (blinksLeft == 0) {
-            return 1L;
-        }
+        if (blinksLeft == 0) return 1L;
 
         Long result;
         if (stone == 0) {
@@ -67,7 +65,6 @@ public class Day11 extends Year2024 {
         cache.put(cacheKey, result);
         return result;
     }
-
 
     boolean isSplittable(Long value) {
         return value.toString().length() % 2 == 0;
