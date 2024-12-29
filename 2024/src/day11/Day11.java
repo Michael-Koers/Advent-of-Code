@@ -4,26 +4,24 @@ import config.Year2024;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Day11 extends Year2024 {
 
-    Map<Blinks, Long> cache = new HashMap<>();
-    List<Stone> stones = new ArrayList<>();
+    Map<String, Long> cache = new HashMap<>();
+    List<Long> stones = new ArrayList<>();
 
     public static void main(String[] args) throws IOException {
         var d = new Day11();
-        var input = d.readInput();
-        d.solve(input);
+        d.solve(d.readInput());
     }
 
     @Override
     public void solvePart1(final List<String> lines) {
 
-        stones = Arrays.stream(lines.getFirst().split(" ")).map(Long::parseLong).map(Stone::new).collect(Collectors.toCollection(ArrayList::new));
+        stones = Arrays.stream(lines.getFirst().split(" ")).map(Long::parseLong).toList();
 
         long sum = 0;
-        for (final Stone stone : stones) {
+        for (final Long stone : stones) {
             sum += blink(stone, 25);
         }
 
@@ -34,18 +32,18 @@ public class Day11 extends Year2024 {
     public void solvePart2(final List<String> lines) {
 
         long sum = 0;
-        for (final Stone stone : stones) {
+        for (final Long stone : stones) {
             sum += blink(stone, 75);
         }
 
         System.out.println("Part 2: " + sum);
     }
 
-    public Long blink(Stone stone, int blinksLeft) {
-        var blinks = new Blinks(stone, blinksLeft);
-        if (cache.containsKey(blinks)) {
-//            System.out.println(" CACHE HIT!");
-            return cache.get(blinks);
+    public Long blink(Long stone, int blinksLeft) {
+        var cacheKey = "%s-%s".formatted(stone, blinksLeft);
+
+        if (cache.containsKey(cacheKey)) {
+            return cache.get(cacheKey);
         }
 
         if (blinksLeft == 0) {
@@ -53,33 +51,25 @@ public class Day11 extends Year2024 {
         }
 
         Long result;
-        if (stone.value() == 0) {
-            result = blink(new Stone(1L), blinksLeft - 1);
-        } else if (stone.isSplittable()) {
-            String currentvalue = stone.value().toString();
-            String leftValue = currentvalue.substring(0, currentvalue.length() / 2);
-            String rightValue = currentvalue.substring(currentvalue.length() / 2).trim();
+        if (stone == 0) {
+            result = blink(1L, blinksLeft - 1);
+        } else if (isSplittable(stone)) {
+            String currentValue = stone.toString();
+            String leftValue = currentValue.substring(0, currentValue.length() / 2);
+            String rightValue = currentValue.substring(currentValue.length() / 2).trim();
 
-            result = blink(new Stone(Long.valueOf(leftValue)), blinksLeft - 1) + blink(new Stone(Long.valueOf(rightValue)), blinksLeft - 1);
+            result = blink(Long.valueOf(leftValue), blinksLeft - 1)
+                    + blink(Long.valueOf(rightValue), blinksLeft - 1);
         } else {
-            result = blink(new Stone(stone.value() * 2024L), blinksLeft - 1);
+            result = blink(stone * 2024L, blinksLeft - 1);
         }
 
-        cache.put(blinks, result);
+        cache.put(cacheKey, result);
         return result;
     }
 
 
-}
-
-record Stone(Long value) {
-
-    boolean isSplittable() {
-        return this.value.toString().length() % 2 == 0;
+    boolean isSplittable(Long value) {
+        return value.toString().length() % 2 == 0;
     }
 }
-
-record Blinks(Stone stone, int blinksLeft) {
-}
-
-
