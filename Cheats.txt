@@ -16,7 +16,7 @@ Path finding
             Math:   √((x1-x0)² + (y1-y0)²)
             Code:   Math.sqrt(Math.pow(x1 - x0, 2d) + Math.pow(y1 - y0, 2d));
 
-    Everywhere to everywhere -> Floyd Warshall
+    Pre-calculate distances from everywhere to everywhere -> Floyd Warshall
 
     From point A
         Only positive weights
