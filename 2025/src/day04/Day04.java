@@ -70,7 +70,6 @@ public class Day04 extends Year2025 {
 
         }
 
-
         int total = 0;
         Set<Point> remove;
 
