@@ -60,7 +60,7 @@ public class Day20 extends Year2024 {
         List<TrackTile> trackTiles = new ArrayList<>();
         trackTiles.add(new TrackTile(track.start(), 0));
 
-        var direction = determineDirection(track, track.start().getNeighbours()
+        var direction = determineDirection(track, track.start().getDirectNeighbours()
                 .stream()
                 .filter(p -> !track.walls().contains(p))
                 .findFirst().get());

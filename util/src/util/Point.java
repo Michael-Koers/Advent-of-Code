@@ -37,12 +37,26 @@ public record Point(long x, long y) {
         return (Math.abs(this.x() - other.x()) + Math.abs(this.y() - other.y()));
     }
 
-    public List<Point> getNeighbours() {
+    public List<Point> getDirectNeighbours() {
         return List.of(
                 new Point(this.x + 1, y),
                 new Point(this.x - 1, y),
                 new Point(this.x, y + 1),
                 new Point(this.x, y - 1)
+        );
+    }
+
+    public List<Point> getAllNeighbours() {
+        return List.of(
+                new Point(this.x + 1, y),
+                new Point(this.x - 1, y),
+                new Point(this.x, y + 1),
+                new Point(this.x, y - 1),
+                new Point(this.x - 1, y - 1),
+                new Point(this.x - 1, y + 1),
+                new Point(this.x + 1, y - 1),
+                new Point(this.x + 1, y + 1)
+
         );
     }
 
