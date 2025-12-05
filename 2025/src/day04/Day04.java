@@ -89,6 +89,6 @@ public class Day04 extends Year2025 {
         } while (!remove.isEmpty());
 
 
-        System.out.println("Part 1: " + total);
+        System.out.println("Part 2: " + total);
     }
 }

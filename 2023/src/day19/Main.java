@@ -61,7 +61,7 @@ public class Main {
                     long value = Long.parseLong(rule.substring(2, rule.indexOf(":")));
 
                     // X field check
-                    if (field.equals("x") && combination.x().inRange(value)) {
+                    if (field.equals("x") && combination.x().contains(value)) {
                         if (op.equals("<")) {
                             // Have to split, everying that complies goes on queue, everything else continues
                             queue.add(new Combination(next, new Range(current.x().start(), value - 1), current.m(), current.a(), current.s()));
@@ -73,7 +73,7 @@ public class Main {
                         }
                     }
                     // M field check
-                    else if (field.equals("m") && combination.m().inRange(value)) {
+                    else if (field.equals("m") && combination.m().contains(value)) {
                         if (op.equals("<")) {
                             // Have to split, everying that complies goes on queue, everything else continues
                             queue.add(new Combination(next, current.x(), new Range(current.m().start(), value - 1), current.a(), current.s()));
@@ -85,7 +85,7 @@ public class Main {
                         }
                     }
                     // A field check
-                    else if (field.equals("a") && combination.a().inRange(value)) {
+                    else if (field.equals("a") && combination.a().contains(value)) {
                         if (op.equals("<")) {
                             // Have to split, everying that complies goes on queue, everything else continues
                             queue.add(new Combination(next, current.x(), current.m(), new Range(current.a().start(), value - 1), current.s()));
@@ -97,7 +97,7 @@ public class Main {
                         }
                     }
                     // S field check
-                    else if (field.equals("s") && combination.s().inRange(value)) {
+                    else if (field.equals("s") && combination.s().contains(value)) {
                         if (op.equals("<")) {
                             // Have to split, everying that complies goes on queue, everything else continues
                             queue.add(new Combination(next, current.x(), current.m(), current.a(), new Range(current.s().start(), value - 1)));
