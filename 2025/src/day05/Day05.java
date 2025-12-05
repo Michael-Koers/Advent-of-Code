@@ -62,14 +62,14 @@ public class Day05 extends Year2025 {
 
                 var newRange = new Range(start, end);
 
-                var optR = ranges.stream()
+                var overlappingRanges = ranges.stream()
                         .filter(r2 -> r2.overlap(newRange))
                         .collect(Collectors.toSet());
 
-                var mergedRange = newRange.merge(optR);
+                var mergedRange = newRange.merge(overlappingRanges);
 
                 // Remove before adding in case we didn't merge, otherwise we would be removing our newly added range
-                ranges.removeAll(optR);
+                ranges.removeAll(overlappingRanges);
                 ranges.add(mergedRange);
 
             } else {
