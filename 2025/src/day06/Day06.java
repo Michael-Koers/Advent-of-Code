@@ -9,7 +9,7 @@ import java.util.Map;
 
 public class Day06 extends Year2025 {
 
-
+    // Little bit of cheating, add a "-" operand at the end of the input file (required to get the correct padding for numbers in last column)
     public static void main(String[] args) throws IOException {
         var d = new Day06();
         var lines = d.readInput();
