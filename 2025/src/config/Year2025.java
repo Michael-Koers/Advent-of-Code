@@ -1,9 +1,8 @@
 package config;
 
+import java.util.List;
 import util.Stopwatch;
 import util.Year;
-
-import java.util.List;
 
 public abstract class Year2025 implements Year {
 
@@ -16,8 +15,8 @@ public abstract class Year2025 implements Year {
         this.stopwatch.prettyPrint();
     }
 
-    public void warmup(List<String> lines, int iterations){
-        for(int i = 0; i < iterations; i++){
+    public void warmup(List<String> lines, int iterations) {
+        for (int i = 0; i < iterations; i++) {
             this.solvePart1(lines);
             this.solvePart2(lines);
         }

@@ -10,8 +10,8 @@ public class Day01 extends Year2025 {
         var d = new Day01();
         var lines = d.readInput();
 
-        d.warmup(lines, 1);
-        d.solve(lines);
+//        d.warmup(lines, 1);
+        d.solveDiagnostics(lines);
     }
 
     @Override
