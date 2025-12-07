@@ -13,7 +13,7 @@ public class Day06 extends Year2025 {
     public static void main(String[] args) throws IOException {
         var d = new Day06();
         var lines = d.readInput();
-        d.solvePart2(lines);
+        d.solve(lines);
     }
 
     @Override
@@ -26,7 +26,7 @@ public class Day06 extends Year2025 {
             var parts = line.trim().split("\\s+");
 
             for (int i = 0; i < parts.length; i++) {
-
+                if (parts[i].contains("-")) {continue;}
                 if (parts[i].trim().contains("*") || parts[i].trim().contains("+")) {
                     ops.put(i, parts[i].trim());
                 } else {
@@ -112,8 +112,6 @@ public class Day06 extends Year2025 {
             }
         }
 
-        System.out.println();
-
         long total = 0L;
 
         for (int i = 0; i < map.size(); i++) {
@@ -149,7 +147,6 @@ public class Day06 extends Year2025 {
                 }
             }
 
-            System.out.println("Result: " + result + "");
             total += result;
         }
 

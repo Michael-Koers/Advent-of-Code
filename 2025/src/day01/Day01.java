@@ -10,6 +10,7 @@ public class Day01 extends Year2025 {
         var d = new Day01();
         var lines = d.readInput();
 
+        d.warmup(lines, 1);
         d.solve(lines);
     }
 
@@ -38,7 +39,7 @@ public class Day01 extends Year2025 {
 
         }
 
-        System.out.println(count);
+        System.out.println("Part 1: " + count);
 
     }
 
@@ -73,7 +74,7 @@ public class Day01 extends Year2025 {
             }
         }
 
-        System.out.println("Clicks: " + count);
+        System.out.println("Part 2: " + count);
 
     }
 }

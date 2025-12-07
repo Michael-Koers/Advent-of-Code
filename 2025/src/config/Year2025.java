@@ -16,6 +16,13 @@ public abstract class Year2025 implements Year {
         this.stopwatch.prettyPrint();
     }
 
+    public void warmup(List<String> lines, int iterations){
+        for(int i = 0; i < iterations; i++){
+            this.solvePart1(lines);
+            this.solvePart2(lines);
+        }
+    }
+
     public Stopwatch stopwatch;
 
     public Year2025() {
