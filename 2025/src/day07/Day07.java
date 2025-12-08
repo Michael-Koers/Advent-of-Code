@@ -19,7 +19,7 @@ public class Day07 extends Year2025 {
         var lines = d.readInput();
 
 //        d.warmup(lines, 2);
-        d.solveDiagnostics(lines);
+        d.solve(lines);
     }
 
     @Override

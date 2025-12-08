@@ -26,6 +26,8 @@ Path finding
         With negative weights
             BellmanFord
 
+    Join disconnected sets -> Union-Find / Kruskal
+
 
 Objects in space
     Collision -> Horizontal/Vertical Ray casting
