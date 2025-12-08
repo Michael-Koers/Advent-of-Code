@@ -5,11 +5,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import javax.crypto.spec.PSource;
 
 public class Day08 extends Year2025 {
 
@@ -18,7 +15,7 @@ public class Day08 extends Year2025 {
 
         var lines = d.readInput();
 
-        d.solvePart2(lines);
+        d.solve(lines);
     }
 
 
