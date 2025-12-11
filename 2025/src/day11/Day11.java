@@ -13,13 +13,47 @@ public class Day11 extends Year2025 {
 
         var lines = d.readInput();
 
-        d.solvePart2(lines);
+        d.warmup(lines, 10);
+        d.solve(lines);
 
     }
 
     @Override
     public void solvePart1(List<String> lines) {
 
+        Map<String, Set<String>> devices = parse(lines);
+
+        String start = "you";
+        String dest = "out";
+        Map<String, Long> visited = new HashMap<>();
+        visited.put(start, 0L);
+
+        var count = countPaths(start, dest, visited, devices);
+
+        System.out.println("Part 1: " + count);
+    }
+
+
+    @Override
+    public void solvePart2(List<String> lines) {
+        Map<String, Set<String>> devices = parse(lines);
+
+        var resultDacToFft = 1L;
+        resultDacToFft *= countPaths("svr", "dac", new HashMap<>(), devices);
+        resultDacToFft *= countPaths("dac", "fft", new HashMap<>(), devices);
+        resultDacToFft *= countPaths("fft", "out", new HashMap<>(), devices);
+
+        var resultFftToDac = 1L;
+        resultFftToDac *= countPaths("svr", "fft", new HashMap<>(), devices);
+        resultFftToDac *= countPaths("fft", "dac", new HashMap<>(), devices);
+        resultFftToDac *= countPaths("dac", "out", new HashMap<>(), devices);
+
+        var total = resultDacToFft + resultFftToDac;
+
+        System.out.println("Part 2: " + total);
+    }
+
+    private static Map<String, Set<String>> parse(List<String> lines) {
         Map<String, Set<String>> devices = new HashMap<>();
 
         for (String line : lines) {
@@ -31,85 +65,28 @@ public class Day11 extends Year2025 {
 
             devices.put(start, neighbours);
         }
-
-        String start = "you";
-        String dest = "out";
-        Set<String> visited = new HashSet<>();
-        visited.add(start);
-
-        var count = countPathsP1(start, dest, visited, devices);
-
-        System.out.println("Part 1: " + count);
+        devices.put("out", Set.of());
+        return devices;
     }
 
-    private long countPathsP1(String current, String dest, Set<String> visited, Map<String, Set<String>> devices) {
+    private long countPaths(String current, String dest, Map<String, Long> cache, Map<String, Set<String>> devices) {
 
         if (current.equals(dest)) {
             return 1L;
         }
 
-        long count = 0;
+        long total = 0;
         for (String next : devices.get(current)) {
 
-            if (visited.contains(next)) {
-                continue;
+            // If we haven't calculated this node to destination before, do it and cache it
+            if (!cache.containsKey(next)) {
+                var count = countPaths(next, dest, cache, devices);
+                cache.put(next, count);
             }
 
-            var newVisited = new HashSet<>(visited);
-            newVisited.add(next);
-
-            count += countPathsP1(next, dest, newVisited, devices);
+            total += cache.get(next);
         }
-        return count;
-    }
-
-    @Override
-    public void solvePart2(List<String> lines) {
-        Map<String, Set<String>> devices = new HashMap<>();
-
-        for (String line : lines) {
-            var start = line.split(":")[0].trim();
-
-            var neighbours = Arrays.stream(line.split(":")[1].trim().split(" "))
-                    .map(String::trim)
-                    .collect(Collectors.toSet());
-
-            devices.put(start, neighbours);
-        }
-
-        String start = "svr";
-        String dest = "out";
-        Set<String> visited = new HashSet<>();
-        visited.add(start);
-
-        var count = countPathsP2(start, dest, visited, devices);
-
-        System.out.println("Part 2: " + count);
-    }
-
-    private long countPathsP2(String current, String dest, Set<String> visited, Map<String, Set<String>> devices) {
-
-        if (current.equals(dest)) {
-            if (visited.contains("dac") && visited.contains("fft")) {
-                return 1L;
-            } else {
-                return 0L;
-            }
-        }
-
-        long count = 0;
-        for (String next : devices.get(current)) {
-
-            if (visited.contains(next)) {
-                continue;
-            }
-
-            var newVisited = new HashSet<>(visited);
-            newVisited.add(next);
-
-            count += countPathsP2(next, dest, newVisited, devices);
-        }
-        return count;
+        return total;
     }
 }
 
