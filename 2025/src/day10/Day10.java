@@ -3,27 +3,70 @@ package day10;
 import config.Year2025;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.stream.Collectors.joining;
+
 public class Day10 extends Year2025 {
+
 
     public static void main(String[] args) throws IOException {
         var d = new Day10();
 
-        var lines = d.readTestInput();
+        var lines = d.readInput();
 
-        d.solvePart1(lines);
+        d.solvePart2(lines);
     }
 
     @Override
     public void solvePart1(List<String> lines) {
-        Pattern pattern = Pattern.compile("(\\[.*?]|\\(.*?\\)|\\{.*?})");
+        List<Machine> machines = parseMachines(lines);
 
+        long total = 0L;
+
+        for (Machine machine : machines) {
+
+            var sequence = findFewestPressed(machine.current(), machine.destination(), machine.buttons(), new ArrayList<>());
+            System.out.println(sequence);
+            total += sequence;
+        }
+
+        System.out.println("Part 1: " + total);
+    }
+
+
+    @Override
+    public void solvePart2(List<String> lines) {
+        List<Machine> machines = parseMachines(lines);
+
+        var z3program = machines.stream().map(Machine::z3program).collect(joining());
+
+        var output = "";
+
+        try {
+            var process = new ProcessBuilder(List.of("C:\\Users\\Michael\\Downloads\\z3-4.15.4-x64-win\\z3-4.15.4-x64-win\\bin\\z3.exe", "-in")).start();
+            process.outputWriter().write(z3program);
+            process.outputWriter().close();
+            process.waitFor();
+            output = new String(process.getInputStream().readAllBytes());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        var result = Pattern.compile("\\(total (\\pN+)\\)")
+                .matcher(output)
+                .results()
+                .map(r -> r.group(1))
+                .mapToInt(Integer::parseInt)
+                .sum();
+
+        System.out.println("Part 2: " + result);
+    }
+
+    private static List<Machine> parseMachines(List<String> lines) {
+        Pattern pattern = Pattern.compile("(\\[.*?]|\\(.*?\\)|\\{.*?})");
 
         List<Machine> machines = new ArrayList<>();
 
@@ -42,73 +85,89 @@ public class Day10 extends Year2025 {
             }
 
             List<BitSet> buttons = new ArrayList<>();
+            List<Integer> joltages = new ArrayList<>();
 
             while (matcher.find()) {
                 var part = matcher.group();
 
-                if (part.startsWith("{")) continue;
+                if (part.startsWith("(")) {
+                    part = part.replace("(", "").replace(")", "");
+                    var trimmed = Arrays.stream(part.split(",")).map(Integer::valueOf).toList();
 
-                part = part.replace("(", "").replace(")", "");
-                var trimmed = Arrays.stream(part.split(",")).map(Integer::valueOf).toList();
+                    BitSet buttonsBitSet = new BitSet(binary.length());
+                    for (Integer button : trimmed) {
+                        buttonsBitSet.set(button);
+                    }
 
-                BitSet buttonsBitSet = new BitSet(binary.length());
-                for (Integer button : trimmed) {
-                    buttonsBitSet.set(button);
+                    buttons.add(buttonsBitSet);
+                } else if (part.startsWith("{")) {
+                    part = part.replace("{", "").replace("}", "");
+                    joltages = Arrays.stream(part.split(",")).map(Integer::valueOf).toList();
+
                 }
-
-                buttons.add(buttonsBitSet);
             }
 
 
-            var machine = new Machine(new BitSet(binary.length()), destination, buttons);
+            var machine = new Machine(new BitSet(binary.length()), destination, buttons, joltages);
             machines.add(machine);
         }
-
-        long total = 0L;
-
-        for (Machine machine : machines) {
-
-            var sequence = findFewestPressed(machine.current(), machine.destination(), machine.buttons(), new ArrayList<>());
-            System.out.println(sequence);
-            total += sequence.size();
-        }
-
-        System.out.println("Part 1: " + total);
+        return machines;
     }
 
-    private List<BitSet> findFewestPressed(BitSet current, BitSet destination, List<BitSet> buttons, List<BitSet> pressed) {
+    private Long findFewestPressed(BitSet start, BitSet destination, List<BitSet> buttons, List<BitSet> pressed) {
 
-        if (current.equals(destination)) {
-            return pressed;
-        }
+        Set<BitSet> seen = new HashSet<>();
+        Queue<Step> states = new LinkedList<>();
+        states.add(new Step(start, 0));
 
-        var remaining = new ArrayList<>(buttons);
-        remaining.removeAll(pressed);
+        while (!states.isEmpty()) {
+            var state = states.poll();
+            if (state.state().equals(destination)) {
+                return state.steps();
+            }
 
-        List<BitSet> shortest = new ArrayList<>(buttons);
+            if (seen.contains(state.state())) {
+                continue;
+            }
 
-        for (BitSet button : remaining) {
-            var next = (BitSet) current.clone();
-            next.xor(button);
-
-            var newPressed = new ArrayList<>(pressed);
-            newPressed.add(button);
-
-            var sequence = findFewestPressed(next, destination, remaining, newPressed);
-
-            if (sequence.size() < shortest.size()) {
-                shortest = sequence;
+            seen.add(state.state());
+            for (BitSet button : buttons) {
+                BitSet nextState = (BitSet) state.state().clone();
+                nextState.xor(button);
+                states.add(new Step(nextState, state.steps() + 1));
             }
         }
 
-        return shortest;
+        throw new IllegalArgumentException("Expected to have an answer by now");
     }
 
-    @Override
-    public void solvePart2(List<String> lines) {
+}
 
+record Machine(BitSet current, BitSet destination, List<BitSet> buttons, List<Integer> joltages) {
+
+    CharSequence z3program() {
+        var builder = new StringBuilder();
+        builder.append("(reset)\n");
+        for (int i = 0; i < buttons.size(); i++) {
+            builder.append("(declare-const k%d Int)\n".formatted(i));
+            builder.append("(assert (>= k%d 0))\n".formatted(i));
+        }
+        for (int j = 0; j < joltages.size(); j++) {
+            builder.append("(assert (= (+");
+            for (int i = 0; i < buttons.size(); i++)
+                if (buttons.get(i).get(j)) builder.append(" k" + i);
+            builder.append(") %d))\n".formatted(joltages.get(j)));
+        }
+        builder.append("(declare-const total Int)\n");
+        builder.append("(assert (= total (+");
+        for (int i = 0; i < buttons.size(); i++) builder.append(" k" + i);
+        builder.append(")))\n");
+        builder.append("(minimize total)\n");
+        builder.append("(check-sat)\n");
+        builder.append("(get-objectives)\n");
+        return builder;
     }
 }
 
-record Machine(BitSet current, BitSet destination, List<BitSet> buttons) {
-}
+record Step(BitSet state, long steps) {
+};
