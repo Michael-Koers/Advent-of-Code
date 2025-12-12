@@ -7,8 +7,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.util.stream.Collectors.joining;
-
 public class Day10 extends Year2025 {
 
 
@@ -41,28 +39,37 @@ public class Day10 extends Year2025 {
     public void solvePart2(List<String> lines) {
         List<Machine> machines = parseMachines(lines);
 
-        var z3program = machines.stream().map(Machine::z3program).collect(joining());
+        long total = 0L;
 
-        var output = "";
+        // 1-by-1, doing all at the same time, froze the process
+        for (int i = 0; i < machines.size(); i++) {
 
-        try {
-            var process = new ProcessBuilder(List.of("C:\\Users\\Michael\\Downloads\\z3-4.15.4-x64-win\\z3-4.15.4-x64-win\\bin\\z3.exe", "-in")).start();
-            process.outputWriter().write(z3program);
-            process.outputWriter().close();
-            process.waitFor();
-            output = new String(process.getInputStream().readAllBytes());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            var output = "";
+            var z3program = machines.get(i).z3program();
+
+            try {
+                // Downloaded z3 windows build from their releases page: https://github.com/Z3Prover/z3
+                var process = new ProcessBuilder(List.of("C:\\Users\\Michael\\Downloads\\z3-4.15.4-x64-win\\z3-4.15.4-x64-win\\bin\\z3.exe", "-in")).start();
+                process.outputWriter().write(z3program);
+                process.outputWriter().close();
+                process.waitFor();
+                output = new String(process.getInputStream().readAllBytes());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            var result = Pattern.compile("\\(total (\\pN+)\\)")
+                    .matcher(output)
+                    .results()
+                    .map(r -> r.group(1))
+                    .mapToInt(Integer::parseInt)
+                    .sum();
+
+            System.out.printf("Machine %d output: %d%n", i, result);
+            total += result;
         }
 
-        var result = Pattern.compile("\\(total (\\pN+)\\)")
-                .matcher(output)
-                .results()
-                .map(r -> r.group(1))
-                .mapToInt(Integer::parseInt)
-                .sum();
-
-        System.out.println("Part 2: " + result);
+        System.out.println("Part 2: " + total);
     }
 
     private static List<Machine> parseMachines(List<String> lines) {
@@ -145,7 +152,7 @@ public class Day10 extends Year2025 {
 
 record Machine(BitSet current, BitSet destination, List<BitSet> buttons, List<Integer> joltages) {
 
-    CharSequence z3program() {
+    String z3program() {
         var builder = new StringBuilder();
         builder.append("(reset)\n");
         for (int i = 0; i < buttons.size(); i++) {
@@ -165,7 +172,7 @@ record Machine(BitSet current, BitSet destination, List<BitSet> buttons, List<In
         builder.append("(minimize total)\n");
         builder.append("(check-sat)\n");
         builder.append("(get-objectives)\n");
-        return builder;
+        return builder.toString();
     }
 }
 
